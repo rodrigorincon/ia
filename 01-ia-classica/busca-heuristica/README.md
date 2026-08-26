@@ -72,4 +72,4 @@ Também não podemos usar o gradiente descendente para minimizar a função de c
 
 Aqui temos 3 exercícios feitos com o algoritmo A* mostrando como usá-lo. Uma busca pelo melhor caminho em um grafo, a resolução de um labirinto e resolução do jogo dos 8.
 
-Nos 2 primeiros o A* será comparado com o Djikistra para vermos a diferença entre as 2 soluções. No jogo dos 8 a função heurística será o número de peças fora do lugar e será feito através de uma busca em grafo também, aonde cada nó é uma combinação de posições.
+Nos 2 primeiros o A* será comparado com o Djikistra para vermos a diferença entre as 2 soluções. No jogo dos 8 será usado A* também, mas não haverá comparação com Djikstra. A função heurística será o número de peças fora do lugar e será feito através de uma busca em grafo também, aonde cada nó é uma combinação de posições.
