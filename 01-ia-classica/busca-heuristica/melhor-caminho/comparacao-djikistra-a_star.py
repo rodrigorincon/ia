@@ -75,7 +75,7 @@ def dijkstra(graph, start, goal):
     if len(path) == 0:
         return float("inf"), []
 
-    return dist[goal.name], path
+    return dist[goal.name], path, len(visited)
 
 def a_star(graph, start, goal):
     # g(n) = custo acumulado desde a origem
@@ -101,7 +101,7 @@ def a_star(graph, start, goal):
             continue
 
         if current_node == goal:
-            return g_score[goal.name], reconstruct_path(previous, start, goal)
+            return g_score[goal.name], reconstruct_path(previous, start, goal), len(closed_set)
 
         closed_set.add(current_node.name)
 
@@ -120,7 +120,7 @@ def a_star(graph, start, goal):
                 f = tentative_g + h
                 open_set.append((f, tentative_g, neighbor))
 
-    return float("inf"), []
+    return float("inf"), [], len(closed_set)
 
 # CRIA OS NÓS DO GRAFO
 A = Node("A", 0, 0, [])
@@ -160,12 +160,14 @@ for node in graph.nodes:
 
 
 # CALCULA OS CAMINHOS  ---------------------------------------
-custo_dji, path_dji = dijkstra(graph, start, goal)
+custo_dji, path_dji, total_visitas = dijkstra(graph, start, goal)
 print('\nDijkstra')
 print("Caminho:", " -> ".join(node.name for node in path_dji))
 print(f"Custo total: {custo_dji:.2f}")
+print(f'Num nós visitados: {total_visitas}')
 
-custo_a, path_a = a_star(graph, start, goal)
+custo_a, path_a, total_visitas = a_star(graph, start, goal)
 print('\nA*')
 print("Caminho:", " -> ".join(node.name for node in path_a))
 print(f"Custo total: {custo_a:.2f}")
+print(f'Num nós visitados: {total_visitas}')
