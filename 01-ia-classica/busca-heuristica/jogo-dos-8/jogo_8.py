@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List, Tuple, Dict, Optional
 import heapq # fila de prioridade
 
@@ -61,6 +60,7 @@ def solve_a_star(start: Board, goal: Board, max_expansions: int = 100_000) -> Tu
   num_pecas_erradas_inicial = count_pecas_erradas(start, goal)
   fila_quadros: List[Node] = []
   heapq.heappush(fila_quadros, (num_pecas_erradas_inicial, 0, start)) # heapq.heappush adiciona um nó a fila de prioridade
+  # ele verifica qual objeto deve ficar na frente seguindo a ordem da tupla. Caso o 1º argumento (peso_total) seja igual verifica o 2º argumento como desempate (distancia ate o objetivo)
 
   num_nodes_analisados = 0
   # guarda o menor nº passos conhecido para cada possibilidade de board (para evitar reprocessar piores caminhos)

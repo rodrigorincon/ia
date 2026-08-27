@@ -30,8 +30,8 @@ Dependendo do contexto você pode ter cálculos específicos para a heurística,
 
 - Distância em linha reta: calcula a distância euclidiana
   - Precisa ter o ponto X e Y (ou latitude e longitude) de cada nó e do ponto final
-- Distância matricial: calcula a distância via Wavefront
-  - Os pontos ao lado do objetivo final tem distância 1, os pontos em volta desse 2 e assim por diante
+- Distância Manhattan: quando não pode andar na diagonal
+  - Soma a distância nos 2 eixos
   - Funciona bem para matrizes. Para grafos precisa rodar todo o grafo dando valores de distância para eles
 - Contagem de peças fora do lugar
   - Usado em videogames como quebra-cabeças e jogo dos 8

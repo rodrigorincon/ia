@@ -90,25 +90,25 @@ def a_star(graph, start, goal):
     g_score[start.name] = 0
 
     # array de tuplas com os seguintes valores nessa ordem: (h(n), g(n), n)
-    open_set = [(heuristica(start, goal), 0, start)]
-    closed_set = set()
+    fila_prior = [(heuristica(start, goal), 0, start)]
+    visitados = set()
 
-    while open_set:
-        open_set.sort(key=lambda item: item[0])
-        current_h, current_g, current_node = open_set.pop(0)
+    while fila_prior:
+        fila_prior.sort(key=lambda item: item[0])
+        current_h, current_g, current_node = fila_prior.pop(0)
 
-        if current_node.name in closed_set:
+        if current_node.name in visitados:
             continue
 
         if current_node == goal:
-            return g_score[goal.name], reconstruct_path(previous, start, goal), len(closed_set)
+            return g_score[goal.name], reconstruct_path(previous, start, goal), len(visitados)
 
-        closed_set.add(current_node.name)
+        visitados.add(current_node.name)
 
         for edge in current_node.neighbors:
             neighbor = edge.target
             weight = edge.weight
-            if neighbor.name in closed_set:
+            if neighbor.name in visitados:
                 continue
 
             tentative_g = g_score[current_node.name] + weight
@@ -118,9 +118,9 @@ def a_star(graph, start, goal):
 
                 h = heuristica(neighbor, goal)
                 f = tentative_g + h
-                open_set.append((f, tentative_g, neighbor))
+                fila_prior.append((f, tentative_g, neighbor))
 
-    return float("inf"), [], len(closed_set)
+    return float("inf"), [], len(visitados)
 
 # CRIA OS NÓS DO GRAFO
 A = Node("A", 0, 0, [])
