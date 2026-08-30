@@ -165,7 +165,7 @@ class JogoVelha: # IA é sempre O e o jogador é sempre X
       print('------------')
       turno_jogador = not turno_jogador
 
-jogo = JogoVelha() # para rodar com a IA jogando aleatoriamente, use RandomStrat()
+jogo = JogoVelha()
 print('\nVocê é a peça X. Ao informar aonde que jogar, escra o número da posição (de 0 a 2) separado por uma virgula. O primeiro número deve ser a linha e a segunda a coluna.')
 jogo.play()
 jogo.print_winner()
