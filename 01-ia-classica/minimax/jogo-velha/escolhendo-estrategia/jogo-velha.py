@@ -2,6 +2,7 @@ import types
 from typing import List, Tuple
 import strategies.randomStrat as randStrat
 import strategies.minimaxStrat as minimaxStrat
+import strategies.podaAlfaBeta as podaStrat
 
 Position = Tuple[int, int]
 TabRow = List[str]
