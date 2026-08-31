@@ -26,6 +26,8 @@ A inteligência da IA está toda na função heurística, pois é ela que define
 
 A função heuristica é **o que diferencia os algoritmos do mesmo jogo um do outro** (um nível fácil de um nível difícil por exemplo ou 2 bots diferentes do mesmo nível). É só isso que faz um ser melhor que o outro. Para jogos muito complexos e que podem ter milhares de níveis a parada por profundidade e a heurística é obrigatória. Supor um valor a partir de um jogo no meio é o real desafio de fazer a IA.
 
+Perceba que quanto menor a profundidade máxima melhor precisa ser a heurística.
+
 ## Poda alfa-beta
 
 A poda alfa-beta é uma otimização do algoritmo, tornando-o mais rápido ao não perder tempo analisando caminhos que não dão em nada. Uma das formas de otimização é definir uma profundidade máxima conforma já explicado, porém a poda alfa-beta não se resume a ela.
@@ -62,3 +64,6 @@ Segundo o teorema minimax (von Neumann), em jogos de soma zero existe uma estrat
 
 Aqui temos 2 projetos usando minimax: jogo da velha e xadrez. No jogo da velha começamos com um projeto sem usar IA (o computador escolhe aleatoriamente onde jogará dentro as posições possíveis) e depois temo um arquivo usando minimax. Podemos olhar o projeto sem IA para enteder a estrutura do sistema e ver os pontos aonde a IA encaixa. A classe jogo da velha foi pensada para o algoritmo da IA ser o mais desacoplado possível, podendo trocar entre diferentes opções implementadas. Na pasta "escolhendo estratégia" isso é implementado, pois é criado um módulo de algoritmos para resolver o jogo da velha, podendo importar a versão que quer e encaixar na classe. Ao criar um algoritmo novo, basta criar um arquivo novo no módulo, importá-lo na classe principal e setá-lo na classe através do método `set_strategy`. Para tanto o novo algoritmo precisa implementar 2 métodos: `set_strategy e definir_proxima_jogada` respeitando a assinatura do método.
 
+Para o xadrez é preciso instalar a biblioteca chasse com o comando `pip install chess`. A biblioteca já entrega funções prontas para controlar e ler o tabuleiro, saber se o jogo acabou, se é vitória ou empate e quais jogadas são possíveis. Usa-se um nível de profundidade baixo, pois a quantidade de filhos é entre 30 e 40, fazendo que se analisar só 3 jogadas afrente já serão 27mil análises. Por isso o número de profundidade precisa ser baixo e todas implementam poda alfa-beta.
+
+Há 3 arquivos diferentes para ele, cada um com uma IA com nível de dificuldade diferente. Todo o código das 3 IAs do xadrez é igual, exceto a função heurística. Foram criadas uma heurística super simples (burra), uma mais rebuscada (médio) e uma que leva em conta muito mais coisas (inteligente).
