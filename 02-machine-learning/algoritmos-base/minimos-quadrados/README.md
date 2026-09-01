@@ -1,6 +1,8 @@
-# MÍNIMOS QUADRADOS ORDINARIOS
+# MÍNIMOS QUADRADOS ORDINARIOS (OLS)
 
 É um algoritmo de otimização matemática usado para minimizar o erro de uma equação. É usado para calcular os parâmetros da regressão linear. É importante entender o que é cada um exatamente e onde cada um começa e termina para não confundir os dois.
+
+Também é chamado de OLS. Cada variação desse algoritmo é chamado por uma sigla diferente.
 
 ## Diferença entre os termos
 
@@ -269,6 +271,46 @@ Com essa equação conseguimos calcular todos os coeficientes da regressão.
 ### Em resumo
 
 > A regressão com matrizes não é outra coisa. É exatamente o mesmo cálculo e a mesma fórmula, porém escrita de outro modo para deixar mais simples e enxuto.
+
+# Variações
+
+Existem diversas variações desse algoritmo para quando não cumpre as premissas de normalidade ou homocedasticidade ou para muitas variáveis.
+
+- Mínimos quadrados ordinais (OLS)
+  - Padrão
+  - **Quando usar**: resíduos normais, homoscedasticidade dos erros e variáveis não são auto-correlacionadas
+- Mínimos quadrados ponderados (WLS)
+  - Cada ponto tem um peso
+  - Outliers tem peso próximo de 0, diminuindo sua influência no cálculo
+  - **Quando usar**: resíduos tem **heteroscedasticidade** (variância nos erros)
+  - **Uso ideal**: quando conhecemos previamente as incertezas dos dados
+    - Senão teremos de ter de calculá-los manualmente e acabamos ficando mais parecido com o GLS
+  - Ex: medições feitas com instrumentos de diferentes precisões ou bases de dados com características diferentes, onde a incerteza de cada medição é previamente conhecida
+- Mínimos quadrados generalizados (GLS)
+  - Usa uma matriz de covariância no lugar dos pesos
+  - Generalização do ponderado, trocando pesos por uma matriz das covariâncias
+  - **Quando usar**: resíduos tem **multicolinearidade e heterocedasticidade** (variáveis X correlacionadas)
+- Mínimos quadrados Robustas (RLS)
+  - Semelhante ao ponderado, porém dá os pesos dos pontos de forma iterativa
+    - Iterativo: recalcula a reta toda vez que encontra um ponto muito discrepante
+  - **Quando usar**: resíduos tem **heteroscedasticidade** (variância nos erros) e **não conhecemos previamente as incertezas** dos dados
+  - **Uso ideal**: quando **não conhecemos previamente as incertezas** dos dados
+  - Ex: dados possuem erros de medição, de digitação ou outros que distorçam gravemente
+- Mínimos quadrados não lineares (NLS)
+  - Quando os dados são **polinomiais**
+  - Usa métodos numéricos iterativos (outros algoritmos) para convergir ao menor erro
+  - Não será analisado aqui por fugir do escopo
+- Mínimos quadrados parciais (PLS)
+  - Quando tenho **mais variáveis do que dados** ou tenho **multicolinearidade**
+  - Todos os outros exigem que a amostra seja maior que o número de variáveis, esse não
+  - Reduz as vars, eliminando as correlacionadas, até ter um número aceitável
+
+## Quando Usar Cada Um
+
+- Heterocedasticidade: mínimos ponderados ou robustos (a depender do conhecimento prévio dos dados)
+- Não normalidade: mínimos robustos
+- Multicolinariedade: mínimos generalizados
+- Muitas vars e poucos dados: mínimos parciais
 
 # Sobre os exercícios
 
