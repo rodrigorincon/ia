@@ -218,3 +218,9 @@ Aplicações: visão computacional, processamento de linguagem natural, síntese
 A **regressão é algo único do aprendizado supervisionado**. Ele não faz sentido nos não supervisionado. A classificação também não faz sentido nos demais, pelo menos não do mesmo modo que é usado. A classificação no não supervisionado é chamadode agrupamento (clusterização) e usa outros métodos diferentes.
 
 Por outro lado, ambos **podem ser usados de forma auxiliar no aprendizado por reforço**. O aprendizado por reforço tem seus próprios algoritmos, mas regressões podem ser úteis para ajudar o algoritmo principal a encontrar as melhores ações.
+
+# SOBRE OS PROJETOS PRESENTES
+
+Muito da estatística usada não será explicada aqui, como distribuições e testes de hipótese. Para entender mais a parte matemática e teórica das inferências e testes de hipóteses, [acesse o repositório estatística e leia a explicação lá do assunto em questão.](https://github.com/rodrigorincon/statistics/tree/main)
+
+A pasta "algoritmos-base" explica os algoritmos internos usados pelos algoritmos principais. Como eles são bastante complexos e é onde reside o segredo por trás do funcionamento dos algoritmos principais e as vezes exigem uma noção matemática maior, eles serão explicados primeiro num lugar exclusivo para depois na pasta devida o algoritmo principal ser explicado como os usa.
