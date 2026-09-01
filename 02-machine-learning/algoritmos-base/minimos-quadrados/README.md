@@ -1,4 +1,4 @@
-# MÍNIMOS QUADRADOS ORDINAIS
+# MÍNIMOS QUADRADOS ORDINARIOS
 
 É um algoritmo de otimização matemática usado para minimizar o erro de uma equação. É usado para calcular os parâmetros da regressão linear. É importante entender o que é cada um exatamente e onde cada um começa e termina para não confundir os dois.
 
