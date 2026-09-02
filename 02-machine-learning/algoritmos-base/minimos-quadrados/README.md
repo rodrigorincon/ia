@@ -24,7 +24,7 @@ Para transformar a relação entre as variáveis em uma linha reta ele usa os m�
 
 A regressão linear define a reta, e os mínimos quadrados calculam exatamente qual é a melhor posição dessa reta no gráfico.
 
-BOTAR A IMAGEM DO FLUXO AQUI
+![](../../images/fluxograma-regressao.png)
 
 ## Importância do Erro
 
