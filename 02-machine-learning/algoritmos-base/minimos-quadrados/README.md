@@ -304,6 +304,10 @@ Existem diversas variações desse algoritmo para quando não cumpre as premissa
   - Quando tenho **mais variáveis do que dados** ou tenho **multicolinearidade**
   - Todos os outros exigem que a amostra seja maior que o número de variáveis, esse não
   - Reduz as vars, eliminando as correlacionadas, até ter um número aceitável
+- Mínimos quadrados condicionais (CLS)
+  - Serve quando temos forte autocorrelação e dados futuros dependem dos valores passados
+  - Trata os valores passados dos primeiros valores como um valor fixo, igual aos primeiros dados ou a média dos primeiros valores, o que facilita e muito a vida do programador
+  - **Quando usar**: séries temporais
 
 ## Quando Usar Cada Um
 
@@ -311,6 +315,7 @@ Existem diversas variações desse algoritmo para quando não cumpre as premissa
 - Não normalidade: mínimos robustos
 - Multicolinariedade: mínimos generalizados
 - Muitas vars e poucos dados: mínimos parciais
+- Séries temporais: mínimos condicionais
 
 # Sobre os exercícios
 
