@@ -31,5 +31,8 @@ Se você está vendo pela primeira vez ou não tem familiaridade com o assunto, 
 3. Gradiente Descendente
 
 - Versão básica (dentro da pasta mãe)
-- Versão regularizada
-- Versão estocástica
+- Versão otimizada (estocástica e mini-batch)
+
+4. Regularização
+
+- Ridge, Lasso e Elastic Net

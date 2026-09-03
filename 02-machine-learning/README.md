@@ -16,12 +16,19 @@ Muito dos modelos de machine learning usam redes neurais, mas ela não é tudo. 
 
 - Coleta de dados: reunir exemplos relevantes.
 - Pré-processamento: limpeza, normalização e engenharia de características.
-- Escolha do modelo: encontra qual modelo melhor funciona para seu contexto e seus dados. As vezes vários podem ser testados. O modelo usa uma **função de perda** que calcula a **quantidade de erro das estimativas** (quão longe erramos nas previsões)
+- Escolha do modelo: encontra qual modelo melhor funciona para seu contexto e seus dados. As vezes vários podem ser testados. O modelo usa: 
+  - Uma **função de perda** que calcula a **quantidade de erro das estimativas** (quão longe erramos nas previsões)
+  - Um **método de otimização** que **encontra o menor valor da função de perda**
+  - Opcional: um método de **regularização** para ajustar o modelo e **evitar ou overfitting ou acelerar seu processamento**
 - Treinamento: ajustar parâmetros do modelo usando dados rotulados (quando aplicável) minimizando a função de perda do modelo. Ou seja, **encontra os parâmetros que erra menos**.
 - Validação/teste: avaliar desempenho em dados não vistos.
 - Deploy: integrar o modelo em aplicações e monitorar seu desempenho.
 
-Arquitetonicamente, modelos aprendem transformações que mapeiam entradas para saídas. A aprendizagem é feita por **otimização e regularização**.
+Arquitetonicamente, modelos aprendem transformações que mapeiam entradas para saídas. A aprendizagem é feita por uma **função de perda** (ou função de custo), **otimização e regularização**.
+
+---
+
+A função de perda é uma função ou algoritmo que mede o quão nossos dados de treino estão longe do que o modelo encontrou. Ele nos dá um norte para onde ir e uma métrica de quão bom ou ruim o modelo está durante o treinamento. Não confundir com o teste com os dados de teste. Aqui ainda estamos no meio do treinamento e buscando os coeficientes que definirão o modelo da IA. O modelo para quando essa função de perda estiver pequena o suficiente.
 
 ---
 
@@ -46,6 +53,40 @@ Nomes comuns quando lidamos com regularização são:
 - Matriz de confusão
 - VIF
 - Versões adaptadas dos algoritmos de otimização
+
+## Passo-a-Passo Completo
+
+No como funciona demos uma lista de ações gerais a serem feitas, mas ela está longe de ser completa. Lá demos uma visão geral com os pontos principais. A seguir listamos todo o passo-a-passo de como rodar um machine learning e explicamos brevemente seus passos. Eles podem ser dividimos em etapas como abaixo:
+
+![](images/diagrama-machine-learning.jpg)
+
+### Fase 1: análise dos dados
+
+1. **Coleta**: Levantamento dos dados, preocupações com armazenamento de dados e engenharia de dados. Integração de bases de dados diferentes.
+
+2.  **Pré-processamento**: Formatação, padronização dos dados e tratamento de outliers e de dados faltantes. Faz transformações nos dados caso necessário.
+
+3. **Análise exploratória**: Compreender seus dados. Plotar gráficos, descobrir sua distribuição, tendências, medidas de centralidade (média, mediana e moda) e dispersão (variância, desvio, skewness e assimetria).
+
+### Fase 2: Machine learning proriamente dito
+
+É aqui que de fato começa o machine learning. Aqui é o material novo e exclusivo dessa área de conhecimento.
+
+4. **Separação dos dados em treino e teste**: Divide os dados em 2 grupos, um que será usado para treinar a IA e outro para testá-la. Existem diversas técnicas para isso que serão melhor abordadas em uma sessão exclusiva.
+
+5. **Escolha do modelo**: A partir da análise exploratória e dos objetivos é escolhido o algoritmo que melhor se encaixa. Aqui também define o algoritmo de otimização e o algoritmo de função de perda utilizada internamente, se usará alguma variação ou regularização do mesmo. Provavelmente será feito vários modelos que serão comparados para escolher o melhor e até mesmo testar o mesmo modelo com diversos parâmetros.
+
+6. **Treinamento**: Execução dos modelos escolhidos com os dados separados. Se os dados foram separados com validação cruzada pode rodar o treinamento várias vezes com os vários grupos de treinamento definidos.
+
+### Fase 3: Avaliação
+
+7. **Avaliação dos resíduos e testes de hipótese**: Busca checar se os dados cumprem as premissas básicas. Verifica os p-valores e verifica os resíduos. Faz os testes nos resíduos e os plota em gráficos para checar premissas. Caso não cumpra nem precisa fazer as previsões, já aborta e volta para o passo de escolher um outro modelo.
+
+8. **Teste do modelo**: Faz previsões com os dados de teste. Executa o modelo com dados inéditos para ele para ver se consegue acertar.
+
+9. **Avaliação das métricas**: Verifica mais métricas retornado pelo treinamento e as métricas dos testes. Verifica quão bem os dados acertam, se os coeficientes encontrados fazem sentido e a margem de erro. Compara diferentes modelos com AIC/BIC, R² e R² ajustado, MAE e RMSE. Verifica se o R² é alto o suficiente e se o MAE e RMSE são baixos o suficiente. Verifica com a matriz de confusão se há algum tipo de dado que o modelo tem dificuldade em acertar. Escolhe o modelo com os melhores resultados e caso nenhum passe volta para o passo da escolha de um novo modelo para testar.
+
+10. **Deploy**: Bota em produção o modelo. Podemos testar os modelos em dev com dados antigos ou mock só para ver se fazem sentido e depois rodar em staging com dados mais novos e reais. Se passar em staging então está pronto para ir para produção. Essa divisão de dados de dev e staging evita expor dados reais e sensíveis para a equipe, porém cria um novo trabalho para o engenheiro de dados: manter 2 bases, limpar dados sensíveis e PII e garantir que os dados de dev ainda sejam úteis para os testes. Pois não adianta usar dados mock aleatórios, eles precisam ter coerência entre si senão nenhum modelo funcionará e ter similaridade com os dados reais senão só escolherá modelo que não funciona na vida real. Pensando nisso o uso de dados antigos, filtrados e em menor escala é a melhor opção, mesmo que mais trabalhosa.
 
 ## Erro como parte do sistema
 
@@ -219,8 +260,22 @@ A **regressão é algo único do aprendizado supervisionado**. Ele não faz sent
 
 Por outro lado, ambos **podem ser usados de forma auxiliar no aprendizado por reforço**. O aprendizado por reforço tem seus próprios algoritmos, mas regressões podem ser úteis para ajudar o algoritmo principal a encontrar as melhores ações.
 
+## DADOS DE TREINO E TESTE
+
+Ao longo do ano foram inventadas várias formas de separar os dados de treino e teste. O mais comum é só separar em dois grupos (com uma proporção maior para os dados de treino), porém com o tempo formas mais elaboradas foram inventadas. Na pasta "dados-treino-e-teste" é explicado como cada um desses métodos funcionam e quando usar cada um.
+
 # SOBRE OS PROJETOS PRESENTES
 
 Muito da estatística usada não será explicada aqui, como distribuições e testes de hipótese. Para entender mais a parte matemática e teórica das inferências e testes de hipóteses, [acesse o repositório estatística e leia a explicação lá do assunto em questão.](https://github.com/rodrigorincon/statistics/tree/main)
 
 A pasta "algoritmos-base" explica os algoritmos internos usados pelos algoritmos principais. Como eles são bastante complexos e é onde reside o segredo por trás do funcionamento dos algoritmos principais e as vezes exigem uma noção matemática maior, eles serão explicados primeiro num lugar exclusivo para depois na pasta devida o algoritmo principal ser explicado como os usa.
+
+A pasta "dados-treino-e-teste" explica como separar seus dados entre esses dois grupos. Esse é um conhecimento essencial para trabalhar com machine learning e tem uma sessão exclusiva para ele.
+
+A ordem recomendada de leitura é:
+
+1. Algoritmos base
+2. Dados de treino e teste
+3. Supervisionado
+4. Não supervisionado
+5. Por reforço
