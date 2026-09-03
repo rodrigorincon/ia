@@ -66,7 +66,7 @@ A grande vantagem desse algoritmo é a pouca memória que ocupa, pois não cria 
 
 A única semelhança entre os dois é ficarem presos em mínimos locais. Além disso o gradiente descendente tem como objetivo minimizar uma outra função (de custo ou de erro). É diferente da subida de encosta que define qual próximo passo de acordo com a função de custo. 
 
-Também não podemos usar o gradiente descendente para minimizar a função de custo da subida de encosta, pois o gradiente traaaaaaabalha com equações e derivadas, ou seja, exige uma expressão matemática da função a ser minimizada. A subida de encosta não fornece uma representação matemática do espaço físico, ao invés disso temos uma árvore, matriz ou grafo e não temos como calcular a derivada dessas estrutura de dados.
+Também não podemos usar o gradiente descendente para minimizar a função de custo da subida de encosta, pois o gradiente trabalha com equações e derivadas, ou seja, exige uma expressão matemática da função a ser minimizada. A subida de encosta não fornece uma representação matemática do espaço físico, ao invés disso temos uma árvore, matriz ou grafo e não temos como calcular a derivada dessas estrutura de dados.
 
 # CÓDIGOS PRESENTES
 

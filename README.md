@@ -36,13 +36,15 @@ Em 1943 Warren McCulloch e Walter Pitts publicam um artigo sobre o modelo matem�
 
 Em 1950, Alan Turing publicou o trabalho *Computing Machinery and Intelligence* e propôs o conhecido **Imitation Game**, posteriormente chamado de **Teste de Turing**. O objetivo não era criar um produto de IA como conhecemos hoje, mas investigar se uma máquina poderia apresentar um comportamento indistinguível do comportamento humano em uma conversa. 
 
+A conferência de Dartmouth, em 1956, é tradicionalmente considerada um marco na criação formal da área de IA e quando o termo se popularizou no meio acadêmico. em 1957 é criado o perceptron, o primeiro algoritmo de aprendizado de máquina e que virou base para os neurônios das redes neurais décadas depois.
+
+---
+
 Nessa época a inteligência e o conhecimento estavam todos no programador que precisava escrever um código que se parecesse inteligente. Aqui todas as regras eram colocadas como if-else no código ou modeladas como grafos ou árvores de decisão. Tentava-se transformar regras do mundo real em regras matemáticas para serem então passadas ao computador e com essas estruturas de dados (árvores e grafos) o programa parecer inteligente.
 
 Nesse período, a preocupação central era:
 
 > **Uma máquina pode apresentar comportamento inteligente?**
-
-A conferência de Dartmouth, em 1956, é tradicionalmente considerada um marco na criação formal da área de IA e quando o termo se popularizou no meio acadêmico. em 1957 é criado o perceptron, o primeiro algoritmo de aprendizado de máquina e que virou base para os neurônios das redes neurais décadas depois.
 
 A ideia era representar explicitamente o conhecimento usando:
 - regras, lógica e símbolos;
