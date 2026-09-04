@@ -24,7 +24,7 @@ Muito dos modelos de machine learning usam redes neurais, mas ela não é tudo. 
 - Validação/teste: avaliar desempenho em dados não vistos.
 - Deploy: integrar o modelo em aplicações e monitorar seu desempenho.
 
-Arquitetonicamente, modelos aprendem transformações que mapeiam entradas para saídas. A aprendizagem é feita por uma **função de perda** (ou função de custo), **otimização e regularização**.
+Arquitetonicamente, modelos aprendem transformações que mapeiam entradas para saídas. A aprendizagem é feita por uma **função de perda** (ou função de custo), **otimização** e **regularização**.
 
 ---
 
