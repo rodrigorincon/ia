@@ -39,7 +39,7 @@ Cada algoritmo tem dois componentes principais:
 
 - **Quando usar**: Quando seu problema for binário ou onde você precisa explicar o motivo da decisão para humanos (via Razão de Chances).
 
-- **Função de Custo**: Máxima log-verossimilhança. Ela pune severamente o modelo se ele prever 99% de certeza de algo que estava errado.
+- **Função de Custo**: Máxima log-verossimilhança (também chamada de Entropia Cruzada). Ela pune severamente o modelo se ele prever 99% de certeza de algo que estava errado.
 
 - **Otimização**: Gradiente Descendente, L-BFGS ou Newton-CG.
 

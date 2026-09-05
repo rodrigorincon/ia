@@ -36,7 +36,7 @@ OBS: é possível mostrar que a OLS é só um um caso especial e simplificado da
 A MLE é utilizada praticamente em **todos os lugares onde o OLS não funciona** para fornecer parâmetros para uma função. Também é usado em diversos algoritmos modernos de **aprendizado de máquina**. 
 
 - **Modelos de Classificação**: Regressão Logística.
-- **Redes Neurais**: A famosa função de perda **Cross-Entropy** é apenas a MLE com outro nome.
+- **Redes Neurais**: A famosa função de perda  **Entropia Cruzada** (Cross-Entropy) é apenas a MLE com outro nome.
 - **Modelos de Contagem**: Regressão de Poisson (quantas vezes algo acontece).
 - **Séries Temporais Complexas**: Modelos GARCH de volatilidade em finanças.
 
@@ -107,3 +107,40 @@ A receita de bolo da Máxima Verossimilhança é sempre a mesma, não importa o 
 3. **Aplique o Logaritmo (Log-Likelihood)**: Transforme as multiplicações em somas.
 4. **Encontre o Máximo (Derivada)**: Faça a derivada dessa soma em relação ao parâmetro que você quer achar e iguale a zero.
 5. **Isole a variável**: O resultado dessa álgebra será a fórmula final do seu coeficiente.
+
+---
+
+# Máxima Verossimilhança para uma Regressão Binária
+
+Vimos o que é e os conceitos da máxima verossimilhança, agora vamos colocá-la numa aplicação prática. Imaginando a máxima verossimilhança num cenário que o resultado só pode ter 2 possibilidades, então a probabilidade $P(x_i)$ presente na verossimilhança é uma probabilidade de Bernoulli (probabilidade de casos binários).
+
+$P(y_i) = p_i^{y_i} * (1 - p_i)^{1 - y_i}$, fórmula de Bernoulli.
+
+Portanto a máxima verossimilhança fica
+
+$\prod p_i^{y_i} * (1 - p_i)^{1 - y_i}$
+
+E ao aplicar a log-verossimilhança podemos descer os expoente multiplicando. Aí fica
+
+$\sum y_i \ln(p_i) + (1 - y_i) \ln(1 - p_i)$
+
+Podemos trocar nossa probabilidade pelo valor previsto/estimado/medido ŷ.
+
+$$MaxLogVero = \sum y_i ln(ŷ) + (1 - y_i) ln(1 - ŷ)$$
+
+## Entropia Cruzada
+
+A entropia cruzada é outro conceito matemático que mede a diferença entre duas distribuições de probabilidade. Ela compara a distribuição de probabilidade dos dados reais com a dos dados previstos e nos dá o quão distante ela nos dá. Ela nada mais é que o negativo da máxima log-verossimilhança. Portanto na prática a entropia cruzada e a máxima verossimilhança, mesmo não sendo a mesma coisa, acabam dando na mesma.
+
+Sua fórmula geral é
+
+$- \sum_x p(x) * ln(q(x))$
+
+Aonde: 
+
+- p(x) é a distribuição de probabilidade verdadeira (os dados reais)
+- q(x) é a distribuição de probabilidade prevista (o modelo)
+
+Para o caso binário como no acima a equação final fica
+
+$CrossEnt = - \frac{MaxLogVero}{N}$

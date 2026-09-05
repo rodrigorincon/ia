@@ -39,7 +39,7 @@ Nomes comuns quando lidamos com otimização são:
 - Regressão
 - Mínimos Quadrados
 - Gradiente Descendente
-- Máxima Verossimilhança
+- Máxima Verossimilhança (entropia cruzada)
 - Árvores de decisão
 - SVM
 
