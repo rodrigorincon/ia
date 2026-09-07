@@ -181,6 +181,10 @@ $\sum \alpha_i - 0,5 \sum_i \sum_j \alpha_i \alpha_j y_i y_j K(x_i, x_j)$
 
 aonde todos os alfas tem de ser entre 0 e C e a soma dos alfas * suas categorias tem de ser 0. $\sum \alpha_i y_i = 0$
 
+> Uma otimização não-linear com restrições (encontrar a derivada = 0 com restrições e onde uma reta não representa bem todo o espaço) é a descrição de um multiplicador de Lagrange com condição KKT. 
+
+Nesse caso queremos derivar a função e ver o maior ponto entre **0 < alfa < C** e também onde $\sum \alpha_i y_i = 0$.
+
 Como essa matemática exige resolver um sistema complexo de restrições para cada par de dados, usamos o SMO (Sequential Minimal Optimization) ao invés do gradiente descendente. Ele quebra esse grande problema em pequenos problemas analíticos, pegando dois alfa por vez, ajustando-os para obedecer às restrições e repetindo o processo até convergir.
 
 ## Função de Otimização (Programação Quadrática)
@@ -210,6 +214,16 @@ Com isso nossa margem (a distância de cada lado da reta) é $\frac{2}{||w||}$.
 ### Por que ele é pesado?
 
 A matemática do SVM com kernels (não-lineares) exige calcular a distância/produto interno de cada ponto de treinamento em relação a todos os outros pontos. Por isso, a complexidade computacional cresce de forma quadrática com o número de amostras (linhas) do dataset. Com muitos dados, o uso da memória RAM e o tempo de treinamento estouram.
+
+## PASSO-A-PASSO
+
+- Inicializa os pesos aleatoriamente (geralmente 0)
+- Começa o gradiente descendente (loops de atualização dos pesos) e vai dado a dado analisando
+- Calcula f(x) e a função de perda (hinge loss)
+- Verifica se a função de perda acertou a categoria daquele ponto
+- Calcula a derivada da função
+- Usa a derivada na função do gradiente descendente para atualizar os pesos
+- Repete até convergir o gradiente
 
 ## Onde é Usado
 

@@ -12,6 +12,7 @@ E explicaremos também conceitos matemáticos importantes usados por esses algor
 - **Razão das chances**: Usado na regressão logística para dar sentido aos seus coeficientes
 - **Máxima Verissimilhança**: Usado pelo gradiente descendente e exige um conhecimento matemático muito específico
 - **Transformação de dados**: Usado opcionalmente em todos os algoritmos caso os dados precisem ser adatados para ficar na mesma escala ou transformados em numérico
+- **Transformações de Lagrange**: Usado pelos otimizadores de SVM para calcular a reta divisória no dimensão N+1
 
 ## Ordem de leitura
 
@@ -29,6 +30,7 @@ Se você está vendo pela primeira vez ou não tem familiaridade com o assunto, 
 - Transformação
 - Máxima Verossimilhança
 - Razão das chances
+- Transformações de Lagrange
 
 3. Gradiente Descendente
 
