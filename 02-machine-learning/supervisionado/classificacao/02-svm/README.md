@@ -71,6 +71,19 @@ O SVM possui alguns comportamentos esperados em relação aos dados:
 
 O SVM não tem problemas com multicolinearidade. Duas variáveis redundantes não mudam muito o local a divisão, afetará de forma sutil. Porém mesmo que o resultado final não seja afetado, o tempo de processamento sim será. A cada nova variável o tempo de processamento do SVM aumenta um pouco, causando o chamado **maldição da Dimensionalidade**. Se a variável não for trazer informação útil o melhor é removê-la para economizar tempo no treinamento. Rodar um VIF ou Matriz de Correlação antes para encontrar e remover essas variáveis pode ser bom.
 
+## Testes de Hipótese
+
+Como o SVM não se baseia em inferências estatísticas (diferente das regressões linear e logística) você não precisa fazer testes para validar premissas ou se os pesos finais são significativos. O que pode ser testável é comparar diferentes modelos de SVM. 
+
+Para tanto podemos usar o teste de McNemar para ver qual modelo se sai melhor quando são apenas 2. Para 3 ou mais modelos usamos o teste de Friedman.
+
+## Testes de Qualidade
+
+- Acurácia
+- Matriz de confusão
+- Testar diferentes C
+- Dividir os dados em K-folds e testar as métricas em todas
+
 ## ENTRADAS E SAÍDAS
 
 Para que o SVM funcione, ele precisa ser alimentado com informações específicas.
