@@ -51,7 +51,7 @@ O SVM tenta encontrar a "rua mais larga possível" que separe as classes. Ele n�
 
 É especialmente usado quando temos muitas variáveis X que afetam nosso Y (muitas colunas ou dimensões). Não é tão visual pois cada variável é uma dimensão, portanto trabalha em cenários com dezenas de dimensões, deixando impossível plotar gráficos.
 
-- **Quando usar**: Bases de dados com muitas colunas (várias variáveis) e margens de separação bem claras, mas que não sejam gigantescas em número de linhas.
+- **Quando usar**: Poucos dados e muitas variáveis (muitas colunas e poucas linhas).
 
 - **Função de Custo**: Hinge Loss. Ela pune pontos que caem no lado errado da margem.
   
