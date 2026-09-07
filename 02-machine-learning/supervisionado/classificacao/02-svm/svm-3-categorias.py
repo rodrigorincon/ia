@@ -24,7 +24,7 @@ X_treino, X_teste, y_treino, y_teste = train_test_split(X, y, test_size=0.2, ran
 
 # Executa o SVM
 # kernel por padrão é RBF. Os valores possiveis são linear, poly, rbf e sigmoid
-modelo_svm = SVC(kernel='linear', random_state=42)
+modelo_svm = SVC(kernel='linear', C=1, random_state=42)
 modelo_svm.fit(X_treino, y_treino)
 
 # Fazendo previsões com a base de teste
