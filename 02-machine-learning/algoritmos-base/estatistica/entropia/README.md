@@ -107,6 +107,12 @@ Onde:
 
 Portanto a **entropia é a soma das probabilidades de cada categoria acontecer vezes suas surpresas (imprevisibilidade)**. O tipo de log depende do contexto avaliado (mais comum é 2 ou e).
 
+Repare que como a probabilidade é no máximo 1 e o log(1)=0 então o valor de cada i será sempre negativo. Com isso a soma será sempre negativo e ao inverter o sinal no final temos uma entropia positiva.
+
+Outra coisa a se reparar é que o valor máximo de entropia é quando os valores tem todos a mesma chance. No caso de valor binário (sim ou não) o valor máximo de entropia é 0.5.
+
+![](../../../images/entropia.jpg)
+
 ### Surpresa
 
 A **quantidade de informação (surpresa)** contida em um único evento $x_i$ é dada por:
@@ -138,3 +144,90 @@ Para calcular a entropia de um conjunto de dados siga o roteiro abaixo:
 4. **Ponderar pelas Probabilidades**: Multiplique a probabilidade de cada classe pela sua respectiva surpresa: $-P(x_i) \log_2(P(x_i))$.
 5. **Somar os Resultados**: Somatório de todos os valores ponderados.
 
+# Ganho de Informação (Information Gain)
+
+O Ganho de Informação mede a **redução esperada na entropia** (ou aleatoriedade) ao dividir os dados com base no valor de alguma variável. Ele informa ao algoritmo o quanto de "conhecimento" é ganho ao se realizar uma pergunta sobre os dados.
+
+Os dados são separados em 2 grupos (ex: x1 < 500 e c1 $\ge$ 500) e checa o quanto essa separação diminuit a entropia. Em algoritmos como ID3, C4.5 e Cart, todas as opções de divisão dos dados são testadas e a divisão que dá o maior ganho de informação (menor entropia) é escolhido como o nó de decisão.
+
+## Entropia Condicional
+
+Para entender o Ganho de Informação, primeiro precisamos da **Entropia Condicional** $H(Y|X)$, que mede a incerteza restante **após** conhecermos os valores do atributo X.
+
+$$H(Y|X) = \sum_{v \in X} \frac{N_v}{N} H(v)$$
+
+Onde:
+- v representa todos os valores de X presentes nos nossos dados.
+- $N_v$ é a quantidade de dados com valor v.
+- $\frac{N_v}{N}$ é a porcentagem desse subconjunto em relação ao total.
+- H(v) é a entropia para esse valor.
+
+## A Matemática do Ganho de Informação
+
+O Ganho de Informação $G(Y, X)$ de um atributo X em relação ao conjunto Y é a diferença entre a entropia inicial e a entropia condicional após a divisão:
+
+$$G(Y, X) = H(Y) - H(Y|X)$$
+
+Em palavras simples:
+
+> **Ganho de Informação = Entropia Total - Entropia Ponderada Depois da Divisão**.
+
+## Exemplo Prático de Aplicação em Árvores de Decisão
+
+Imagine um problema de classificação onde queremos prever se um cliente vai comprar um produto (**Sim** ou **Não**).
+
+Nosso conjunto inicial possui 10 clientes com informações sobre sua renda:
+
+| total casos | Alta renda | Comprou |
+| :---:       |   :---:    |  :---:  |
+| 5           |    Sim     |  Sim    |
+| 1           |    Não     |  Sim    |
+| 4           |    Não     |  Não    |
+
+### 1. Entropia Inicial (Nó Pai)
+
+6 pessoas compraram (Sim) e 4 pessoas não compraram (Não)
+
+P(Sim) = $\frac{6}{10} = 0.6$
+
+P(Não) = $\frac{4}{10} = 0.4$.
+
+$H(Y) = - \sum p_i log_2(p_i) = -[P(Sim)log_2(Sim) + P(Não)log_2(Não)]$
+
+$H(Y) = - [0.6 * \log_2(0.6) + 0.4 * \log_2(0.4)] = - [0.6 * (-0.737) + 0.4 * (-1.322)] = - [-0.442 - 0.529] = 0.971$
+
+### 2. Entropia da Renda
+
+Todos de renda alta compraram (N=5, 5 Sim, 0 Não).
+
+P(comprou) = 1
+
+P(não comprou) = 0
+
+H(Renda Alta) = $- [1.0 * \log_2(1.0) + 0 * \log_2(0)] = - [1.0 * 0 + 0] = 0$
+
+---
+
+Dentre os que não são alta renda, 1 comprou e 4 não (N=5, 1 Sim, 4 Não).
+
+P(comprou) = 1/5 = 0.2
+
+P(não comprou) = 4/5 = 0.8
+
+H(Renda Baixa) = $- [0.2 * \log_2(0.2) + 0.8 * \log_2(0.8)] = 0.722$
+
+### 3. Ganho de Informação$
+
+G(Y| renda) = Entropia Total - Entropia Ponderada Depois da Divisão
+
+G(Y| renda) = $H(Y) - \sum \frac{N_i}{N} * H(Y_i) = H(Y) - [\frac{N_{rendaAlta}}{N} * H(Y_{rendaAlta}) + \frac{N_{rendaBaixa}}{N} * H(Y_{rendaBaixa})]$
+
+G(Y| renda) = $0.971 - [\frac{5}{10} * 0 + \frac{5}{10} * 0.722] = 0.971 - [0 + 0.361] = 0.971 - 0.361 = 0.61$
+
+Isso significa que testar a pergunta "Renda Alta?" reduz a incerteza do nosso problema em **0.610 bits**. Quanto maior esse valor, melhor é o atributo para realizar a divisão na árvore de decisão.
+
+## Cuidados e Limitações do Ganho de Informação
+
+O Ganho de Informação puro possui uma limitação grave: atributos com muitas categorias, onde cada valor será único ou quase nunca se repetem (como CPF, altura ou data de nascimento) dividem os dados em subconjuntos minúsculos e puros, resultando em entropia zero e um ganho de informação artificialmente gigante, mas sem nenhum poder de generalização (causando overfitting extremo).
+
+Para mitigar esse problema, algoritmos como o **C4.5** utilizam a **Razão de Ganho**, que penaliza atributos com muitas divisões ao dividir o ganho pela Entropia da Divisão. Alternativamente, o algoritmo **CART** utiliza a **Impureza de Gini**, que aproxima o comportamento da entropia sem necessitar de cálculos logarítmicos pesados.
