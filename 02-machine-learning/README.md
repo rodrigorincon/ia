@@ -84,7 +84,7 @@ No como funciona demos uma lista de ações gerais a serem feitas, mas ela está
 
 8. **Teste do modelo**: Faz previsões com os dados de teste. Executa o modelo com dados inéditos para ele para ver se consegue acertar.
 
-9. **Avaliação das métricas**: Verifica mais métricas retornado pelo treinamento e as métricas dos testes. Verifica quão bem os dados acertam, se os coeficientes encontrados fazem sentido e a margem de erro. Compara diferentes modelos com AIC/BIC, R² e R² ajustado, MAE e RMSE. Verifica se o R² é alto o suficiente e se o MAE e RMSE são baixos o suficiente. Verifica com a matriz de confusão se há algum tipo de dado que o modelo tem dificuldade em acertar. Escolhe o modelo com os melhores resultados e caso nenhum passe volta para o passo da escolha de um novo modelo para testar.
+9. **Avaliação das métricas**: Verifica mais métricas retornado pelo treinamento e as métricas dos testes. Verifica quão bem os dados acertam, se os coeficientes encontrados fazem sentido e a margem de erro. Compara diferentes modelos com AIC/BIC, R² e R² ajustado, MAE e RMSE. Verifica se o R² é alto o suficiente e se o MAE e RMSE são baixos o suficiente. Verifica com a matriz de confusão se há algum tipo de dado que o modelo tem dificuldade em acertar. Escolhe o modelo com os melhores resultados e caso nenhum passe volta para o passo da escolha de um novo modelo para testar. Mais a frente é listado quais métricas funcionam para cada caso.
 
 10. **Deploy**: Bota em produção o modelo. Podemos testar os modelos em dev com dados antigos ou mock só para ver se fazem sentido e depois rodar em staging com dados mais novos e reais. Se passar em staging então está pronto para ir para produção. Essa divisão de dados de dev e staging evita expor dados reais e sensíveis para a equipe, porém cria um novo trabalho para o engenheiro de dados: manter 2 bases, limpar dados sensíveis e PII e garantir que os dados de dev ainda sejam úteis para os testes. Pois não adianta usar dados mock aleatórios, eles precisam ter coerência entre si senão nenhum modelo funcionará e ter similaridade com os dados reais senão só escolherá modelo que não funciona na vida real. Pensando nisso o uso de dados antigos, filtrados e em menor escala é a melhor opção, mesmo que mais trabalhosa.
 
@@ -253,6 +253,23 @@ Aplicações: transferência de representações em visão e NLP.
 Usa arquiteturas de redes neurais profundas (CNNs, RNNs, Transformers) para aprender representações hierárquicas. Treinamento exige dados em larga escala, otimização cuidadosa e hardware especializado (GPUs/TPUs). Consomem muito mais energia e processador, pois as redes neurais tem muitas camadas internas (por isso chamadas de profundas).
 
 Aplicações: visão computacional, processamento de linguagem natural, síntese de áudio.
+
+## Métricas de Qualidade
+
+Dependendo do tipo de modelo usamos métricas de qualidade diferente. Abaixo mostro quais métricas usar para cada tipo. Alguns modelos podem ter métricas específicas dele a serem usadas também.
+
+- Supervisionado (regressão)
+  - MAE, MAPE E RMSE
+  - R² e R² ajustado
+  - AIC/BIC
+- Supervisionado (classificação)
+  - Acurácia
+  - Precisão, Recall e F1-Score
+  - Curva ROC
+  - Matriz de confusão
+  - falso R² (a depender)
+- Não supervisionado
+
 
 # RELAÇÃO ENTRE OS TIPOS DE APRENDIZADO
 
