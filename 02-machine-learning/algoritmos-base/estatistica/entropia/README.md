@@ -172,7 +172,7 @@ Em palavras simples:
 
 > **Ganho de Informação = Entropia Total - Entropia Ponderada Depois da Divisão**.
 
-## Exemplo Prático de Aplicação em Árvores de Decisão
+## Exemplo
 
 Imagine um problema de classificação onde queremos prever se um cliente vai comprar um produto (**Sim** ou **Não**).
 
