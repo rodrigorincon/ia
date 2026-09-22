@@ -12,6 +12,9 @@ Como a resposta pode ser qualquer valor dos números reais, a regressão forma u
 
 - Regressão linear: cria uma equação de primeiro grau (uma linha ou plano) que representa seus dados
 - Regressão polinomial: cria uma equação de qualquer grau que representa seus dados
+- KNN: tira a média dos K dados mais próximos do que está sendo avaliado
+- SVR: adaptação do SVM para regressão. Calcula a reta, plano ou hiperplano que melhor descreve os dados ao invés de separá-los com o menor erro médio
+- Regressão com Árvores de decisão: os dados de treino são divididos nas folhas de uma árvore de decisão e o valor previsto é a média dos valores presente na folha escolhida
 
 A grande verdade é que regressão polinomial não é muito usada, pois é muito complexa de modelar e aumenta e muito os cálculos necessários. O mais comum é usar transformação nos dados para linearizá-los e depois aplicar a regressão linear. Outros métodos como redes neurais também são mais recomendáveis para modelar nesses casos.
 
