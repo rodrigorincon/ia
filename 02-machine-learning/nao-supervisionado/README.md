@@ -193,6 +193,56 @@ Tem 3 tipos de métrica:
 - Confiança: AB/A, porcentagem de casos que A e B aparecem juntos dividido pelo total de casos A (aqui A com B é diferente de B com A)
 - Lift: o quanto a frequência de B aumenta com a ocorrência de A
 
+- **Quando usar**: Quando quer saber se um dado aparece mais acompanhado de outro do que sozinho e se algum outro dado aumenta a chance dele acontecer. Análise de compras ou recomendações simples.
+- **Pontos negativos**: 
+  - Lentidão extrema
+  - Não funciona quando a ordem de aparecimento dos dados importa
+
+A vantagem é que ainda é possível paralelizar para compensar o peso.
+
+### FP-Growth
+
+Melhoria do Apriori, aonde substitui sua análise combinatória por uma estrutura de dados compacta chamada FP-Tree (Árvore de Padrões Frequentes). Ele roda a base de dados inteira apenas 2 vezes ao invés de $2^n$. Na primeira ele lista todos os produtos e joga fora todos que aparecem menos que o suporte mínimo. Na segunda ele ordena os itens do mais frequênte ao menos e os adiciona na árvore.
+
+Com a árvore montada, Ele começa o loop subindo a partir das folhas para a raiz (bottom-up), cria Bases de Padrões Condicionais e gera árvores condicionais menores para extrair os padrões frequentes por `dividir para conquistar`.
+
+- **Quando usar**: Quando a base de dados for muito grande e/ou com itens repetidos ou quando queremos um suporte baixo (que causaria uma explosão de combinações no Apriori).
+- **Pontos negativos**: 
+  - Exige muita memória RAM (árvore fica enorme)
+  - Implementação mais complexa e incapaz de paralelizar
+
+### GSP
+
+Voltado para **padrões sequenciais**. O GSP busca sequências temporais ou ordenadas de compras/eventos feitas pelo mesmo indivíduo ao longo do tempo. Ele funciona de forma iterativa.
+
+1. Encontra sequências de tamanho 1 frequentes.
+2. Gera candidatos de tamanho k a partir das sequências de tamanho k-1.
+3. Varre a base para testar se as sequências candidatas respeitam restrições de tempo configuradas (janelas de tempo, tempo mínimo/máximo entre eventos).
+4. Aplica a poda de sequências infrequentes e repete o ciclo.
+
+- **Quando usar**: Quando a ordem dos acontecimentos/eventos/compras importa. Navegação de páginas em sites, comportamento de pessoas, jornada do cliente. Progressão de tratamentos e sintomas com o passar do tempo.
+- **Pontos negativos**: 
+  - Lentidão extrema (mantém a demora do Apriori)
+  - Explode se a janela de tempo for muito flexível
+
+### Eclat
+
+Enquanto o Apriori usa uma matriz aonde cada linha é uma transação e os itens são as colunas, no Eclat é o oposto. Isso nos permite saber quais transações/compras tem um certo produto olhando uma única linha. Assim para saber se 2 produtos são frequênte juntos basta olhar suas linhas. É muito mais rápido que o Apriori.
+
+- **Quando usar**: Quando busca velocidade
+- **Pontos negativos**: 
+  - Exige muita memória RAM
+
+> OBS: Eclat e FP-Growth são os mais rápidos e os que mais consomem RAM. Qual será mais rápido depende dos dados, se os dados forem ultra-densos FP-Growth costuma ser mais rápido. Para saber se sua base é densa divida total de itens comprados em todas as transações pelo total de itens * número de transações.
+> Se a densidade for > 10 OU min_sup for muito pequeno (ex: 0.1), melhor usar o FP-Growth
+
+$\text{densidade} = \frac{ \sum \text{item comprado} }{N_t * N_i} * 100$
+
+Aonde
+
+- $N_t$ é o número de transações (linhas do Apriori)
+- $N_i$ é o número de itens (colunas do Apriori)
+
 ## Validação de Modelos
 
 As métricas para o não supervisionado são totalmente diferentes das métricas usadas no supervisionado. Como não temos uma variável Y para comparar temos de usar outros métodos. As métricas de cluster e de redução de dimensionalidade também são diferentes entre si.
@@ -207,4 +257,3 @@ As métricas para o não supervisionado são totalmente diferentes das métricas
 
 - **Variância Explicada**: Mostra quanta informação do conjunto de dados original é mantida pelas novas dimensões reduzidas.
 - **Erro de Reconstrução**: Mede a diferença entre os dados originais e os dados reconstruídos após passar pelo processo de compressão do modelo.
-

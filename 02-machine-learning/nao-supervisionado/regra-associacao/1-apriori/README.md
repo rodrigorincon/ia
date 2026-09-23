@@ -43,7 +43,27 @@ Tem 3 tipos de métrica:
 - Quando a ordem dos eventos importa (usar GSP nesse caso)
 - Velocidade de resposta for importante
 
-## Passo 1: Definir conjuntos mais vendidos juntos (Suporte)
+## COMO FUNCIONA
+
+Ele é dividido em 3 partes: 
+
+1. Calcular as proporções de todas as combinações de todos os produtos com todos
+
+A primeira parte também é chamado de "conjuntos mais vendidos" e usa o hiper-parâmetro `suporte` definido (valor de corte). Ou seja, só considera as combinações que estejam presente em pelo menos S% das compras. O símbolo dessas proporções é **S**.
+
+2. Calcular a probabilidade de cada produto ser comprado dado que o outro está junto. 
+
+A segunda parte é executada somente em cima das listas de produtos retornados pela primeira parte. A segunda parte é chamada de `Confiança` e calcula a probabilidade de um produto A ser comprado dado que B também está sendo comprado. O símbolo da confiança é **C**.
+
+O número de cálculos dispara nessa parte, sendo **a parte mais pesada** e a responsável pela demora do algoritmo. Essa demora se dá por calcular a probabilidade de toda a análise combinatória dos produtos da lista e faz isso em todas as listas que vieram da primeira parte.
+
+3. Calular a força dessa combinação.
+
+Calcula a métrica `lift`, que nos diz se A tem mais chance de aparecer com B do que sozinho (a compra AB é quantas vezes mais frequênte que apenas A). Essa é a métrica mais forte e mais importante, sendo usada na tomada de decisão. O símbolo desses cálculos é **L**.
+
+Importante ter em mente que o **lift é a chance, não a probabilidade**, portanto pode ser maior que 1. Um lift = 1 significa que AB aparece tanto quanto A sozinho, portanto qualquer valore $\le 1$ deve ser descartado ao final.
+
+### Parte 1: Definir conjuntos mais vendidos juntos (Suporte)
 
 #### 1.1: porcentagens de venda de cada produto
 
@@ -53,7 +73,7 @@ $S(prod) = N_{prod} / N$
 
 Esse valor de 1 ou conjunto de produtos vendidos dividido pelo total de vendas é chamado de **suporte**. Ele indica a frequência que um produto ou conjunto de produtos aparecem nas compras. Indica a `popularidade da combinação`.
 
-#### 1.2: rodar valor de corte
+#### 1.2: rodar valor de corte (suporte)
 
 Verifico quais tem valor menor que o valor de corte. Esses eu removo e não passarei para o próximo loop. Apenas **valores iguais ou maiores continuam**.
 
@@ -73,13 +93,13 @@ Exemplo2: quando k=4 as linhas da tabela anterior tem que ter ao menos 2 produto
 
 #### 1.4: critério de parada
 
-Devo continuar criando tabelas até que não haja mais novas combinações entre conjuntos da tabela anterior. Se a **tabela final estiver vazia, termino o loop**.
+Devo continuar criando tabelas até chegar em K ou até que não haja mais novas combinações entre conjuntos da tabela anterior. Se a **tabela final estiver vazia, termino o loop**.
 
-## Passo 2: Cálculo da Confiança nas combinações
+### Parte 2: Cálculo da Confiança nas combinações
 
 Mede a probabilidade de o item A ser comprado quando o item B já está na cesta. Usamos as combinações sobreviventes e **todas as tabelas** do passo anterior (não apenas da última). Diz quão confiante estou que um produto A será adicionado à cesta quando B está presente, por isso é uma **probabilidade**.
 
-Importante perceber que P(A|B) é diferente de P(B|A). Ou seja, tenho de calcular a confiança de "A,B" e de "B,A".
+Importante perceber que P(A|B) é diferente de P(B|A). Ou seja, tenho de calcular a confiança de "A,B" (probabilidade de comprar A dado que estou comprando B) e de "B,A" (probabilidade de comprar B dado que estou comprando A).
 
 A confiança de A ser adicionado dado que B está na cesta é calculado assim
 
@@ -89,7 +109,7 @@ E o contrário seria
 
 $C(B|A) = \frac{S(A,B)}{S(B)}$
 
-OBS: `repare que S(A,B) = S(B,A), mas isso não vale para a confiança. C(A|B) != C(B|A)`.
+> OBS: `repare que S(A,B) = S(B,A), mas isso não vale para a confiança. C(A|B) != C(B|A)`.
 
 Quando tenho mais produtos fica assim, para um caso que tenho a combinação A,B,C.
 
@@ -121,7 +141,7 @@ Calcula a probabilidade de cada análise combinatória da linha. Ao final, para 
 
 Todas as confianças abaixo do valor de corte são eliminadas. Apenas as confianças com valor igual ou maior permanecem. O valor de corte é o mesmo para todas as tabelas k.
 
-## Passo 3: Cálculo da força da associação (lift)
+## Parte 3: Cálculo da força da associação (lift)
 
 Semelhante a confiança, ele nos dá a força da confiança calculada. Ou seja, a força dessa proabilidade. O **lift é uma medida mais forte**, pois leva mais coisas em consideração. Ele não é uma probabilidade, podendo ser maior que 1.
 
