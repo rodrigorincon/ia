@@ -4,11 +4,11 @@ from mlxtend.frequent_patterns import fpgrowth, association_rules
 
 # Dados de exemplo. Cada linha é um carrinho de compras
 compras = [
-    ['Pao', 'Leite', 'Manteiga'],
-    ['Pao', 'Fralda', 'Cerveja', 'Ovos'],
-    ['Leite', 'Fralda', 'Cerveja', 'Cafe'],
-    ['Pao', 'Leite', 'Fralda', 'Cerveja'],
-    ['Pao', 'Leite', 'Manteiga', 'Cafe']
+	['Pao', 'Leite', 'Manteiga'],
+	['Pao', 'Fralda', 'Cerveja', 'Ovos'],
+	['Leite', 'Fralda', 'Cerveja', 'Cafe'],
+	['Pao', 'Leite', 'Fralda', 'Cerveja'],
+	['Pao', 'Leite', 'Manteiga', 'Cafe']
 ]
 
 # PRÉ-PROCESSAMENTO (One-Hot Encoding)

@@ -183,15 +183,15 @@ Enquanto o PCA mantém as distâncias globais amplas, o t-SNE é focado em mante
 
 ## Principais Algoritmos de Regras de Associação
 
-### Apriori
-
-Mede o quanto dois itens (ou valores em uma variável) aparecem juntos e o quanto aparecem separados. É amplamente usado em compras online e mercado, analisando o carrinho de compras do cliente. Procura descobrir quais combinações mais aparecem e se elas não são fruto do acaso comparando com suas aparições sozinhas.
-
 Tem 3 tipos de métrica:
 
 - Suporte: conta todos os casos em q A e B aparecem juntos (A com B = B com A)
 - Confiança: AB/A, porcentagem de casos que A e B aparecem juntos dividido pelo total de casos A (aqui A com B é diferente de B com A)
 - Lift: o quanto a frequência de B aumenta com a ocorrência de A
+
+### Apriori
+
+Mede o quanto dois itens (ou valores em uma variável) aparecem juntos e o quanto aparecem separados. É amplamente usado em compras online e mercado, analisando o carrinho de compras do cliente. Procura descobrir quais combinações mais aparecem e se elas não são fruto do acaso comparando com suas aparições sozinhas.
 
 - **Quando usar**: Quando quer saber se um dado aparece mais acompanhado de outro do que sozinho e se algum outro dado aumenta a chance dele acontecer. Análise de compras ou recomendações simples.
 - **Pontos negativos**: 
@@ -227,14 +227,15 @@ Voltado para **padrões sequenciais**. O GSP busca sequências temporais ou orde
 
 ### Eclat
 
-Enquanto o Apriori usa uma matriz aonde cada linha é uma transação e os itens são as colunas, no Eclat é o oposto. Isso nos permite saber quais transações/compras tem um certo produto olhando uma única linha. Assim para saber se 2 produtos são frequênte juntos basta olhar suas linhas. É muito mais rápido que o Apriori.
+Enquanto o Apriori usa uma matriz aonde cada linha é uma transação e os itens são as colunas, no Eclat é o oposto. Isso nos permite saber quais transações/compras tem um certo produto olhando uma única linha. Assim para saber se 2 produtos são frequênte juntos basta olhar suas linhas. É muito mais rápido que o Apriori e pode ser paralelizado.
 
 - **Quando usar**: Quando busca velocidade
 - **Pontos negativos**: 
   - Exige muita memória RAM
 
 > OBS: Eclat e FP-Growth são os mais rápidos e os que mais consomem RAM. Qual será mais rápido depende dos dados, se os dados forem ultra-densos FP-Growth costuma ser mais rápido. Para saber se sua base é densa divida total de itens comprados em todas as transações pelo total de itens * número de transações.
-> Se a densidade for > 10 OU min_sup for muito pequeno (ex: 0.1), melhor usar o FP-Growth
+> Se a densidade for > 10 OU min_sup for muito pequeno (ex: 0.1) E não precisa paralelizar, melhor usar o FP-Growth
+> Sempre que paralelismo for essencial, use o Eclat.
 
 $\text{densidade} = \frac{ \sum \text{item comprado} }{N_t * N_i} * 100$
 
@@ -250,8 +251,12 @@ As métricas para o não supervisionado são totalmente diferentes das métricas
 ### Métricas de Agrupamento
 
 - **Coeficiente de Silhueta**: Mede quão parecido um objeto é com o seu próprio grupo e com os outros grupos. O valor varia de -1 a 1, sendo quanto maior melhor (mais diferente são os grupos entre si e parecidos internamente).
-- **Índice de Davies-Bouldin**: Avalia a distância média entre o centro de cada grupo e o centro do grupo mais próximo. Quanto menor melhor.
-- **Índice de Calinski-Harabasz**: Calcula a razão entre a dispersão inter-clusters e a dispersão intra-cluster. Quanto maior melhor.
+- **Índice de Davies-Bouldin**: Avalia a distância média entre o centro de cada grupo e o centro do grupo mais próximo. Indicam o quão concentrados os dados estão perto do centro ou se estão dispersos. Um valor alto pode indicar sobreposição. Quanto menor melhor (varia de 0 a infinito).
+- **Índice de Calinski-Harabasz**: Calcula a razão entre a dispersão inter-clusters e a dispersão intra-cluster. Quanto maior melhor (varia de 0 a infinito).
+
+> Como os dois índices tem quase o mesmo objetivo e possuem o mesmo Big-O, a escolha fica se tem ou não muitos outliers:
+> - Muitos outliers: **Calinski-Harabasz**, pois o outro é muito sensível a eles.
+> - Poucos outliers: **Davies-Bouldin** pois o outro tem o viés de favorecer K maiores sempre, então melhor seguir esse.
 
 ### Métricas de Redução de Dimensionalidade
 

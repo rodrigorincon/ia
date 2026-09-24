@@ -190,7 +190,8 @@ O processo se repete de forma idêntica para os próximos itens da Header Table 
 - **Análise de Cesta de Compras (Market Basket Analysis):** Descobrir quais produtos costumam ser comprados em conjunto no varejo ou e-commerce.
 
 > Use-o quando a densidade (itens se repetindo muito) for alta ou min_sup for muito baixo.
-> Se a densidade for > 10 OU min_sup for muito pequeno (ex: 0.1), use FP-Growth. Senão, use Eclat.
+> Se a densidade for > 10 OU min_sup for muito pequeno (ex: 0.1) E não precisa paralelizar, use FP-Growth. Senão, use Eclat.
+> Sempre que paralelismo for essencial, use o Eclat.
 
 ## QUANDO NÃO USAR
 
