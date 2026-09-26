@@ -20,7 +20,7 @@ DIRECOES = [
 ]
 MAX_PASSOS_SEM_COMER = 150
 
-# Ambiente em qua a IA vai agir
+# Ambiente em qua a IA vai agir. O AMBIENTE É RESPONSAVEL POR DEFINIR O VALOR DA RECOMPENSA
 class SnakeGame:
 	direcao_idx: int
 	cabeca: np.array
@@ -157,7 +157,7 @@ class QLearningAgent:
 	# pega todos os valores da tabela para um certo estado (linha)
 	def _get_table_values(self, estado):
 		if estado not in self.table:
-			self.table[estado] = np.zeros(self.n_acoes) # cria uma nova linha (chave) ao descobrir um novo estado. Cada estado é uma célula do jogo
+			self.table[estado] = np.zeros(self.n_acoes) # cria uma nova linha (chave) ao descobrir um novo estado. Cada estado é uma  combnação de célula do jogo, perigos na casa imediatamente a volta e direção da comida
 		return self.table[estado]
 
 	# Algoritmo para decidir entre Eploração e Explotação (Epsilon-Greedy)
@@ -167,6 +167,7 @@ class QLearningAgent:
 		q_linha = self._get_table_values(estado)
 		return np.argmax(q_linha)
 
+	# a posição da comida em relação a cobra é parte do estado, não só a posição da cobra no mapa. É assim que a IA usa a posição da comida pra auxiliar na decisao pra que lado vai
 	def learn(self, estado, acao, recompensa, proximo_estado, done):
 		q_atual = self._get_table_values(estado)[acao]
 		q_proximo_max = (0 if done else np.max(self._get_table_values(proximo_estado)))
@@ -235,15 +236,18 @@ env = SnakeGame()
 agente = QLearningAgent()
 episodios = 600
 
+max_passos = 10_000
 for _ in range(episodios):
 	estado = env.reset()
 	done = False
+	passos = 0
 
-	while not done:
+	while not done and passos < max_passos:
 		acao = agente.choose_action(estado)
 		proximo_estado, recompensa, done, pontuacao = env.step(acao)
 		agente.learn(estado, acao, recompensa, proximo_estado, done)
 		estado = proximo_estado
+		passos += 1
 
 # Inicia a renderização interativa após o treino
 executar_demo_visual(agente, env)

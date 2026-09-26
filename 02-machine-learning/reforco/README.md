@@ -115,6 +115,18 @@ No início a entropia/aleatoriedade é alta, pois estamos explorando e descobrin
 
 Conforme aprendemos a entropia cai e a distribuição de ações cria picos (algumas ações são mais prováveis que outras). O objetivo é que a entropia seja **baixa e estável ao final**.
 
+### Memória
+
+Cada tipo de RL tem mecanismos de memória diferente ligada a família do algoritmo. Esse mecanismo de memória começa zerado e vai sendo preenchido a cada passo em todos os episódios/simulações. Conforme vai explorando o ambiente e descobrindo sobre o mesmo, preenche-se essa estrutura de dados que guarda a memória. É essa memória que é usada para tomada de decisão. 
+
+Importante ter em mente que a memória **não deve ser apagada ao iniciar uma nova simulação!** Se apagar você perde todo o ganho de conhecimento que teve com as outras simulações e joga todo o tempo e esforço no lixo. Por não apagar a memória que as últimas simulações convergem mais rápido e já fazem decisões mais acertadas. Também é o que nos permite ir abaixando a entropia aos poucos ao longo das simulações (outra variável que se altera entre as simulações).
+
+A estrutura que armazena a memória é:
+
+- Baseados em Valor: tabela Q ou função de valor
+- Baseados em Política: parâmetros internos da política $\theta$ (pesos da rede neural)
+- Baseados em Modelo: Modelo do Ambiente
+
 ## Frequência das Recompenas
 
 A depender do que está fazendo as recomepensas podem vir logo após a ação (Ação -> Recompensa -> Ação), podem vir durante a execução mas muito depois (com atraso) ou podem vir só ao final da execução (quando encerra o modelo). As vezes você até pode escolher entre as três opções, modelando de forma diferente a IA conforme julgar melhor.
@@ -164,7 +176,7 @@ O RL se divide em quatro grandes paradigmas de acordo com como o algoritmo apren
 
 1. **Baseados em Valor (Value-Based):** Aprendem a estimar a função de valor Q(s, a) e escolhem a ação de maior valor.
   - Pontua quão bom é cada estado e escolhe o estado disponível com maior ponto.
-  - Usa Tabela Q.
+  - Usa Tabela Q ou função de valor.
 2. **Baseados em Política (Policy-Based):** Otimizam a política $p_\theta(a|s)$ diretamente, sem precisar de uma tabela Q.
   - Busca os parâmetros internos $\theta$ (parâmetros da função política) que dão o melhor retorno.
 3. **Ator-Crítico (Actor-Critic):** Mistura dos 2 tipos acima.
