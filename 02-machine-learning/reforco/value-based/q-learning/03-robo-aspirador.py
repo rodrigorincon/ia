@@ -13,6 +13,7 @@ class RoboAspiradorEnv:
 	base: Point
 	initial_obstacles: List[Point]
 	robot_pos: List[Point]
+	last_pos: Point
 	battery: int
 	step_count: int
 	dirt_map: np.ndarray
@@ -29,6 +30,7 @@ class RoboAspiradorEnv:
 
 	def reset(self):
 		self.robot_pos = list(self.base)
+		self.last_pos = None
 		self.battery = self.max_battery
 		self.step_count = 0
 
@@ -58,14 +60,14 @@ class RoboAspiradorEnv:
 			if vizinhos_livres and random.random() < 0.30:
 				self.obstacles[i] = random.choice(vizinhos_livres)
 
-	# Estado = (linha, coluna, nível bateria, se a celula que o robo tá agora está suja)
+	# Estado = (linha, coluna, nível bateria, se a celula que o robo tá agora está suja, ultima_posicao)
 	def get_state(self):
 		row, col = self.robot_pos
 		is_dirty = self.dirt_map[row, col]
-		return (row, col, self.battery, is_dirty)
+		last_p = tuple(self.last_pos) if self.last_pos is not None else (-1, -1)
+		return (row, col, self.battery, is_dirty, last_p)
 
 	# Ações: Cima=0, Baixo=1, Esquerda=2, Direita=3
-	# encerra se a bateria descarregar ou se voltar pra base após limpar tudo. Se limpar tudo mas a bateria acabar antes de voltar então ganha menos ponto
 	def step(self, action):
 		self.step_count += 1
 		self.battery -= 1  # Consumo constante de bateria a cada passo
@@ -80,12 +82,19 @@ class RoboAspiradorEnv:
 
 		reward = 0.0
 		done = False
+		prev_pos = list(self.robot_pos)
 
 		# Colisão com paredes ou obstáculos móveis
 		if not (0 <= new_row < self.size and 0 <= new_col < self.size) or [new_row, new_col] in self.obstacles:
 			reward -= 10.0  # Penalidade por colisão
 			# Robô permanece na mesma posição (não vai pra casa ja ocupada)
 		else:
+			# Penalidade adicional caso tente retornar imediatamente à posição anterior
+			# No Q-Learn, não devemos criar regras (ifs e código) proibindo certos movimentos. 
+			# Ao invés disso permitimos mas damos penalidades para essa ação e deixamos a IA aprender a não fazer isso
+			if self.last_pos is not None and [new_row, new_col] == self.last_pos:
+				reward -= 15.0  # Penaliza o movimento de retorno imediato (evita ir e voltar pra mesma casa)
+			self.last_pos = prev_pos
 			self.robot_pos = [new_row, new_col]
 
 		row, col = self.robot_pos
@@ -139,7 +148,7 @@ class QLearningVacuumAgent:
 	min_epsilon: float
 	n_actions: int
 	
-	def __init__(self,alpha=0.1,gamma=0.95,epsilon=1.0,epsilon_decay=0.9992,min_epsilon=0.02):
+	def __init__(self, alpha=0.1, gamma=0.95, epsilon=1.0, epsilon_decay=0.9992, min_epsilon=0.02):
 		self.table = {}
 		self.alpha = alpha
 		self.gamma = gamma
@@ -214,7 +223,7 @@ while not done and step_idx < max_steps:
 	trajetoria.append(list(env.robot_pos))
 	step_idx += 1
 
-	row, col, bat, sujo = state
+	row, col, bat, sujo, last_p = state
 	celulas_limpas = np.sum(env.dirt_map == 0)
 	porcentagem_limpa = (celulas_limpas / (env.size * env.size)) * 100
 
@@ -228,10 +237,10 @@ while not done and step_idx < max_steps:
 			if env.dirt_map[r, c] == 1:
 				grid_visual[r, c] = ' [ * ] '  # Célula não limpa
 			if env.robot_pos[0] == r and env.robot_pos[1] == c:
-				grid_visual[row, col] = ' [ o ] '
+				grid_visual[r, c] = ' [ o ] '
 	# Marca os obstáculos móveis
-	for row, col in env.obstacles:
-		grid_visual[row, col] = ' [ X ] '  # Obstáculo móvel
+	for r, c in env.obstacles:
+		grid_visual[r, c] = ' [ X ] '  # Obstáculo móvel
 	# mostra na tela o mapa
 	for r in range(env.size):
 		linha_str = ''.join(grid_visual[r, :])
@@ -263,11 +272,10 @@ plt.grid(True, linestyle='--', alpha=0.5)
 plt.show()
 
 # VISUALIZAÇÃO: Número de Passos em cada episódio
-# Tira a média móvel de 30 episódios para mostrar uma curva mais suave com a tendência
-media_movel = np.convolve(passos_por_episodio, np.ones(30) / 30, mode='valid')
+media_movel_passos = np.convolve(passos_por_episodio, np.ones(30) / 30, mode='valid')
 plt.figure(figsize=(9, 5))
 plt.plot(passos_por_episodio, alpha=0.3, color='gray', label='Episódio')
-plt.plot(media_movel, color='blue', linewidth=2, label='Média Móvel (30 ep)')
+plt.plot(media_movel_passos, color='blue', linewidth=2, label='Média Móvel (30 ep)')
 plt.title('Evolução da quantidade de passos — Q-Learning')
 plt.xlabel('Episódio')
 plt.ylabel('Num Passos')

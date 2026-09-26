@@ -80,6 +80,8 @@ Diferentes ações e/ou consequências podem dar recompensas diferentes. Ex: bat
 
 Ficar atento ao valor e a diferença entre eles é essencial. No exemplo do carro, se a pista de corrida tem 10km, andar 1 metro na direção certa e ganhar 1 ponto pode afetar muito pouco perante o risco de batida, merecendo um valor maior por metro.
 
+> **Importante**: uma característica vital do aprendizado por reforço é que **não devemos criar código proibindo certas ações danosas** (ex: ficar indo e voltando sempre para o mesmo ponto). Ao invés disso devemos permitir, porém dar uma recompensa negativa ao fazer essa ação. Assim a IA aprende a não fazê-la (que é o objetivo do ML afinal) e mantemos o código enxuto.
+
 ### Episódio
 
 Episódio é uma simulação. Durante o aprendizado fazemos centenas ou até milhares de simulações aonde o modelo testa diversos caminhos. Cada simulação é chamada de episódio. 
