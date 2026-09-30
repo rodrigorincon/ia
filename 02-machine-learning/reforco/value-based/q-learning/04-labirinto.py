@@ -158,7 +158,7 @@ class MazeEnv:
 		# Ao invés disso permitimos mas damos penalidades para essa ação e deixamos a IA aprender a não fazer isso
 		self.last_pos = list(self.position)
 		if self.last_pos is not None and [new_row, new_col] == self.last_pos:
-			return -50.0  # Penaliza o movimento de retorno imediato (evita ir e voltar pra mesma casa)
+			return -100.0  # Penaliza o movimento de retorno imediato (evita ir e voltar pra mesma casa)
 		return 0
 
 	def print_labirinto(self):
@@ -202,11 +202,25 @@ class QLearningMazeAgent:
 			self.table[state] = np.zeros(self.n_actions) # cria uma nova linha (chave) ao descobrir um novo estado. Cada estado é uma  combnação de célula do jogo, perigos na casa imediatamente a volta e direção da comida
 		return self.table[state]
 
-	# Algoritmo para decidir entre Eploração e Explotação (Epsilon-Greedy)
+	# Algoritmo para decidir entre Exploração e Explotação (Epsilon-Greedy) filtrando apenas ações válidas
 	def choose_action(self, state):
+		# Os primeiros 4 elementos do estado indicam paredes: 0 = Livre, 1 = Parede
+		wall_up, wall_down, wall_left, wall_right = state[:4]
+		paredes = [wall_up, wall_down, wall_left, wall_right]
+		# Filtra apenas os índices das ações que NÃO levam a uma parede (valor 0)
+		acoes_validas = [i for i in range(self.n_actions) if paredes[i] == 0]
+		# Caso de emergência: se não houver ações válidas (ex: encurralado), permite todas
+		if not acoes_validas:
+			acoes_validas = list(range(self.n_actions))
+
+		# Exploração: escolhe aleatoriamente entre as ações válidas
 		if random.random() < self.epsilon:
-			return random.randint(0, self.n_actions - 1)
-		return np.argmax(self._get_table_values(state))
+			return random.choice(acoes_validas)
+
+		# Explotação: busca a ação de maior pontuação Q apenas dentre as ações válidas
+		q_values = self._get_table_values(state)
+		melhor_acao = max(acoes_validas, key=lambda idx: q_values[idx])
+		return melhor_acao
 
 	def learn(self, state, action, reward, next_state, done):
 		q_current = self._get_table_values(state)[action]
@@ -259,7 +273,6 @@ env_teste = MazeEnv(grid_teste, start_teste, goal_teste)
 agent.epsilon = 0.0  # Desativa exploração para o teste
 state = env_teste.reset()
 done = False
-max_steps = 150 # como o mapa de teste é maior, aumenta o max_steps
 
 trajetoria = [list(env_teste.position)]
 print('--- SIMULAÇÃO NO 4º LABIRINTO (NUNCA VISTO PELO ROBÔ) ---')
@@ -271,7 +284,7 @@ while not done and step_idx < max_steps:
 	step_idx += 1
 	state = next_state
 
-	# imprime o mapa com mostrando cada passo
+	# imprime o mapa mostrando cada passo
 	env_teste.print_labirinto()
 	print('------------------------\n')
 
@@ -279,23 +292,6 @@ print('\n======================== MAPA FINAL DO LABIRINTO ======================
 print('          MAPA FINAL DO TESTE (LABIRINTO 4)        ')
 print(f'Saída Encontrada: {"SIM" if done else "NÃO"}')
 print(f'Total de Passos Necessários: {step_idx}')
-
-# VISUALIZAÇÃO DO CAMINHO NO LABIRINTO DE TESTE
-matriz_imprimir = np.full(grid_teste.shape, ' . ', dtype=object)
-for r in range(grid_teste.shape[0]):
-	for c in range(grid_teste.shape[1]):
-		if grid_teste[r, c] == 1:
-			matriz_imprimir[r, c] = ' # '
-for idx, (r, c) in enumerate(trajetoria):
-	if (r, c) == start_teste:
-		matriz_imprimir[r, c] = ' S '
-	elif (r, c) == goal_teste:
-		matriz_imprimir[r, c] = ' G '
-	else:
-		matriz_imprimir[r, c] = f' {idx:1d} '
-for r in range(grid_teste.shape[0]):
-  print(''.join(matriz_imprimir[r, :]))
-
 
 # VISUALIZAÇÃO: CURVA DE APRENDIZADO
 # Tira a média móvel de 30 episódios para mostrar uma curva mais suave com a tendência
