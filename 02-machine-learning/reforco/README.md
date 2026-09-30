@@ -214,6 +214,8 @@ Onde:
 
 Ou seja, atualiza a tabela a cada ação de acordo com as recompensas. Ao recebermos a recompensa sabemos quão bom foi essa ação nessa tal situação. Com isso atualizamos a tabela na posição de onde estávamos informando que aquela ação no estado anterior é boa/ruim nesse nível. A função de custo e otimização são a mesma.
 
+Modelar o que é um estado e como impedir que tenhamos dezenas de milhares de estados é o que faz desafiador programar esse algoritmo, exigindo criatividade e diversos testes do programador. Ex: um labirinto não é inteligente usar a coordenada das casas como estado, pois ao usar um labirinto novo com as paredes em outros lugares ou que seja maior a grande maioria das linhas da tabela não terão sido preenchidas.
+
 ### SARSA (State-Action-Reward-State-Action)
 
 Muito semelhante ao Q-Learning, mas é um algoritmo **On-Policy**. Em vez de considerar a melhor ação da tabela ($\max_a Q(S_{t+1}, a)$), o SARSA utiliza a **ação real $A_{t+1}$** escolhida pela política (incluindo o ruído de exploração).
