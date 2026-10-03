@@ -1,7 +1,7 @@
 from typing import Tuple, List
-
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 # scikit learn não tem algoritmos por reforço. As libs que podem ser usadas são
 # Gymnasium / OpenAI Gym para jogos ou PyTorch / TensorFlow quando tem muitas colunas e exige redes neurais
 
@@ -60,6 +60,31 @@ class GridWorld:
 			return (next_state_idx, -1.0, False)
 
 
+def calcular_entropia_politica(Q_table: np.ndarray, epsilon: float, n_actions: int) -> float:
+	# calcula a entropia média de Shannon (em bits, usando log2) sobre todos os estados
+	# leva em consideração o cálculo de decisão entre exploração e explotação
+
+	num_states = Q_table.shape[0]
+	entropias_estados = []
+
+	for s in range(num_states):
+		# identifica a melhor ação para o estado s
+		best_action = np.argmax(Q_table[s])
+		# constrói a distribuição de probabilidade da função de exploração/explotação para as ações no estado s
+		# array de probabilidade de cada ação. Probabilidade uniforme, mas a soma não dá 1, pois a soma é a probabilidade de tomar uma ação de explotação
+		# O restante da probabilidade é de fazer uma ação aleatória (exploração)
+		probs = np.full(n_actions, epsilon / n_actions)
+		probs[best_action] += (1.0 - epsilon)
+
+		# Fórmula da Entropia de Shannon: H(s) = - sum(prob * log2(prob))
+		# Ignoramos probabilidades de valor zero para evitar erro de log(0)
+		# soma todas as probabilidades de acordo com a equação
+		entropia_s = -sum(prob * math.log2(prob) for prob in probs if prob > 0)
+		entropias_estados.append(entropia_s)
+
+	# Retorna a entropia média do ambiente
+	return float(np.mean(entropias_estados))
+
 env = GridWorld(size=4)
 n_states = env.size * env.size
 n_actions = len(env.actions)
@@ -80,6 +105,7 @@ episodios = 800  # numero de vezes que vamos repetir a simulação
 episodios_a_imprimir = [0, 100, 700]
 recompensas_por_episodio = []
 passos_por_episodio = []
+entropia_por_episodio = []
 np.random.seed(42)
 for episodio in range(episodios):
 	state = env.reset() # como é uma simulação nova, iniciamos do 0
@@ -87,6 +113,10 @@ for episodio in range(episodios):
 	max_passos = 10_000
 	passos = 0
 	recompensa_total = 0
+
+	# Calcula e registra a entropia média da política antes de iniciar as ações do episódio
+	entropia_atual = calcular_entropia_politica(Q_table, epsilon, n_actions)
+	entropia_por_episodio.append(entropia_atual)
 
 	if(episodio in episodios_a_imprimir): print(f'\n\n===================== EPISODIO {episodio} =====================')
 
@@ -173,3 +203,13 @@ plt.show()
 # sinal que deu andou muito em circulo tbm
 # teve muita mudança brusca tbm, indicando que o modelo demora a convergir, aprende devagar e ainda desaprende de uma simulação pra outra
 # porém a média móvel mostra que apesar da variância a tendência sempre foi positiva e convergiu. Podemos ver isso tbm que os picos e vales foram diminuindo com o passar do tempo
+
+# VISUALIZAÇÃO: CURVA DE ENTROPIA
+plt.figure(figsize=(9, 5))
+plt.plot(entropia_por_episodio, color='purple', linewidth=2, label='Entropia Média (bits)')
+plt.title('Evolução da Entropia')
+plt.xlabel('Episódio')
+plt.ylabel('Entropia')
+plt.legend()
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.show()

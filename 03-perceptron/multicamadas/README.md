@@ -1,6 +1,6 @@
 # PERCEPTRON MULTICAMADAS (MLP) E BACKPROPAGATION
 
-O **Perceptron Multicamadas** (MLP, de *Multi-Layer Perceptron*) é uma rede neural artificial formada por camadas de neurônios enfileiradas: uma camada de entrada, uma ou mais **camadas ocultas** e uma camada de saída. 
+O Perceptron Multicamadas (MLP, de *Multi-Layer Perceptron*) é uma rede neural artificial formada por camadas de neurônios enfileiradas: uma camada de entrada, uma ou mais **camadas ocultas** e uma camada de saída. 
 
 Ele é a evolução direta do perceptron simples, colocando vários deles em enfileirados para resolver problemas que ele não conseguia. Essa evolução do perceptron simples retirou um modelo que havia caído em descrédito e o colocou como o modelo de ponta da área inteira. Um único neurônio só desenha uma reta e, por isso, não resolve problemas complexos. 
 

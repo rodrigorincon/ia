@@ -1,18 +1,6 @@
 # PERCEPTRON SIMPLES
 
-É o primeiro modelo de **"neurônio artificial" treinável**, simulado em 1957 e formalizado no artigo publicado em 1958. Sua ideia era simular um neurônio humano e replicar como nosso cérebro funciona biologicamente. A função desse modelo inicial era apenas classificar dados, não fazia regressões.
-
-Seu funcionamento acontecia dando pesos diferentes para cada entrada e atualizando os pesos. Ou seja, sua premissa de inteligência era descobrir o peso para cada entrada.
-
-Assim como a regressão logística, é um **classificador binário linear**: separa dados em 2 categorias usando uma reta (ou hiperplano, em mais dimensões). A diferença central é como ele aprende os pesos dessa reta.
-
-Ele é considerado a ponte entre os modelos estatísticos clássicos e as redes neurais modernas: a mesma estrutura de somar entradas ponderadas e aplicar uma função de ativação.
-
-## O Primeiro Neurônio
-
-Sua primeira implementação em 1958 era um computador analógico conectado a uma câmera de retícula 20x20 (400 pixels). Os pesos não eram variáveis salvas na memória RAM, mas sim potenciômetros motores (resistores variáveis ajustados por motores elétricos).
-
-Sua função era apenas reconhecer imagens de 20x20 pixels, identificando se era um objeto A ou B. Ele não conseguia tratar outros tipos de dados ou separar entre 3 ou mais categorias.
+É um modelo que usa apenas 1 único neurônio. Ele não chega a formar uma rede neural, sendo a forma mais básica e simples de se usar esse modelo.
 
 ## Estrutura
 

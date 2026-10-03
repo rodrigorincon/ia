@@ -1,8 +1,12 @@
 # APRENDIZADO POR REFORÇO
 
-O **Aprendizado por Reforço** (Reinforcement Learning ou RL) é a vertente do Machine Learning voltada para a **tomada de decisões sequenciais**. Diferente do aprendizado supervisionado e do não supervisionado o Aprendizado por Reforço aprende por **tentativa e erro** através da **interação direta com um ambiente dinâmico**.
+O Aprendizado por Reforço (Reinforcement Learning ou RL) é a vertente do Machine Learning voltada para a **tomada de decisões sequenciais**. Diferente do aprendizado supervisionado e do não supervisionado o Aprendizado por Reforço aprende por **tentativa e erro** através da **interação direta com um ambiente dinâmico**.
 
 Se no aprendizado supervisionado nós damos um livro com perguntas e gabarito, e no não supervisionado entregamos apenas o livro sem respostas, no aprendizado por reforço nós colocamos o algoritmo em um robô ou videogame e dizemos: "Seus pontos sobem quando você faz algo bom e caem quando faz algo ruim. Descubra sozinho como tirar a pontuação máxima."
+
+A melhor analogia é ver a IA como um bebê. A IA aprende como um bebê explorando o mundo e interagindo com ele, descobrindo que é bom e o que é ruim pelas recompensas que o mundo lhe dá. Ele começa como uma tela em branco e vai descobrindo o que é vantajoso ou não a cada vez que faz algo. Esse método é super semelhante a vida real e muito natural, porém é muito fácil de gerar resultados absurdos, por isso é comum ter de testar diversos hiper-parâmetros, treinando a IA dezenas de vezes até achar os hiper-parâmetros que o fazem aprender corretamente sem algum comportamento bizarro.
+
+> Ex: uma IA de explorar um ambiente pode preferir ficar parada porque todas as casas em volta são piores que a atual (ser acomodar). Um carro pode aprender a andar em círculos para nunca bater em uma parede (comportamento vicioso). Uma IA pode descobrir um bug no jogo que o faz atravessar paredes ou mesmo só jogar abaixado para reduzir risco de ser acertado.
 
 ## Ciclo de Interação Agente-Ambiente
 
@@ -22,6 +26,26 @@ O agente (modelo) mede com seus sensores como o ambiente a sua volta está e dec
 - **Sistemas de Recomendação:** Ajustar respostas de LLMs (como ChatGPT) usando feedback humano como sinal de recompensa.
 
 > **Objetivo**: Encontrar uma **Política (P)** otimizada que indique qual ação tomar em cada estado para **maximizar a recompensa acumulada** ao longo do tempo. Isso é feito testando e maximizando os parâmetros internos da política até achar o melhor valor (semelhante ao gradiente descendente atualizando os pesos).
+
+## Modelando Estado
+
+O ambiente precisa ser modelado de alguma forma para que possamos aprender com ele. Com isso surge um problema: definir os estados. Cada estado é uma forma que o ambiente e a IA pode estar nele. Por exemplo, os 4 cenários a seguir são considerados estados diferentes, pois ou o ambiente muda (chão limpo ou sujo) ou como a IA está nele muda (sua posição e local):
+
+- Robô em pé no meio da sala com chão sujo
+- Robô deitado no meio da sala com chão sujo 
+- Robô em pé no canto da sala com chão sujo
+- Robô em pé no canto da sala com chão limpo
+
+Modelar o que é um estado e o que e como devem interferi-lo é a peça chave dos algoritmos por reforço. Quais características afetam o comportamento da IA e o quanto cada uma deve ser relevante? Ao definir que algo afeta o comportamento, modelar o como afeta também é crucial, tornando essa parte da construção da IA desafiadora.
+
+> Exemplo prático: no jogo Snake a posição entre a cabeça da cobra e a comida e também quais casas a sua volta estão livres definem o estado. Porém podemos definir que só as casas vizinhas importam ou todas as casas do jogo.
+
+Repare que como você definir o estado, a quantidade de estados podem ser infinitas! Imagine que cada milímetro que o robô andar para o lado for considerado um estado novo, ou cada 0.001 graus que a temperature aumente seja um estado novo. A **quantidade de estados possíveis é chamado de dimensionalidade**. Quando se tem milhares de dimensões alguns algoritmos podem quebrar, por isso a modelagem do que deve ser considerado como parte do estado e quão pequena suas variações tem de ser é muito importante na hora da escolha do algoritmo.
+
+Algumas decisões que podem ser feitas são:
+
+- Eliminar uma variável, não a considerando para as escolhas da IA (ex: não considerar a bateria do robô)
+- Considerar o tamanho da mudança para ser um novo estado (estar 1 milímetro pro lado é um novo estado?)
 
 ## Diferença para o Aprendizado Supervisionado e Não Supervisionado
 
@@ -49,10 +73,10 @@ No RL não existe uma matriz de dados X estática baixada antes do treino. Os da
 
 $$\tau = (S_0, A_0, R_0, S_1, A_1, R_1, ..., S_T)$$
 
-Cada interação gera uma tupla de transição: $(S_t, A_t, R_{t+1}, S_{t+1})$. 
+Cada interação gera uma tupla de transição: $(S_t, A_t, R_{t+1}, S_{t+1})$. Assim como não há a matriz X, também **não existe os valores Y**. Como não há comparação entre valor previsto e esperado (seja durante o treino como no supervisionado ou pós treino como no não supervisionado), os valores Y perdem todo o sentido de existir. Não existe um valor a ser alcançado ou comparado nesse cenário.
 
 - **Algoritmos On-Policy:** Usam os dados da transição instantaneamente para atualizar o modelo e depois os **descartam os dados após o uso**. Apenas interações geradas pela política atual são válidas (como em uma Cadeia de Markov tradicional).
-- **Algoritmos Off-Policy:** Armazenam milhões de tuplas passadas em uma memória chamada **Replay Buffer** (D) e fazem amostragem em mini-lotes para treinar, aumentando a eficiência de amostra.
+- **Algoritmos Off-Policy:** Armazenam tabelas ou tuplas passadas em uma memória chamada **Replay Buffer** (D) e fazem amostragem em mini-lotes para treinar, alcançando o objetivo em menos passos.
 
 > Por conta disso **NÃO EXISTE DADOS DE TREINO E TESTE** no sentido tradicional, pois não há um dataset fixo previamente conhecido que possamos dividir. Em vez disso, a relação com dados ocorre da seguinte forma:
 
@@ -67,8 +91,6 @@ Cada interação gera uma tupla de transição: $(S_t, A_t, R_{t+1}, S_{t+1})$.
 3. **Generalização em Ambientes Não Vistos** 
   - Testa se o agente realmente aprendeu ou apenas memorizou a simulação (overfitting).
   - Altera-se as **sementes aleatórias (seeds)** do ambiente, muda os mapas de início ou utiliza-se cenários do mundo real (diferentes do simulador de treino).
-
----
 
 ## Componentes Principais
 
@@ -116,6 +138,34 @@ A entropia é o grau de incerteza que a política (modelo) tem sobre o que fazer
 No início a entropia/aleatoriedade é alta, pois estamos explorando e descobrindo o mundo. Quando a entropia é alta a distriuição de ações é uniforme (todas as ações possíveis tem a mesma chance de ocorrer). 
 
 Conforme aprendemos a entropia cai e a distribuição de ações cria picos (algumas ações são mais prováveis que outras). O objetivo é que a entropia seja **baixa e estável ao final**.
+
+#### Como Calcular
+
+É usado a equação da entropia de Shannon, que soma a probabilidade de cada ação ser tomada em cada estado e tira a média total. Ou seja, ele tira a **média das probabilidades de explotação** (ignora as ações tomadas por exploração). O cálculo é
+
+$H = \frac{\sum_s - \sum_a P(a | s) log_2( P(a | s) )}{N_s}$
+
+Aonde:
+- s é cada estado
+- a é cada ação
+- $N_s$ é o número de estados
+- P(a | s) é a probabilidade de tomar uma determinada ação nesse estado
+
+Toda ação de exploração é considerada entropia e um pouco das de explotação também (pois até o modelo está plenamente treinado tem um resíduo de aleatoriedade nas escolhas). O passo-a-passo para calcular a entropia de uma episódio é:
+- Considera toda a taxa de exploração como entropia (portanto todos os cálculos seguintes são feitos considerando só a porcentagem restante - explotação)
+- Para cada estado S 
+  - Calcula-se a probabilidade de cada ação ser feita (número de vezes que ela foi escolhida dividido pelo total de ações)
+  - Soma as probabilidades de todas as ações para aquele estado segundo a equação de Shannon $-\sum_a P(a | s) log_2( P(a | s)$
+  - Calcula a média de todos os estados
+
+#### O Que a Faz Diminuir
+
+- Diminuir a taxa de exploração (e) a cada episódio
+  - Quanto maior a taxa de exploração, maior a entropia (e menor a explotação - tomada de decisão inteligente)
+  - A probabilidade de cada ação dado o estado é considerado apenas dentro da fatia de explotação. Toda a porcentagem de exploração é considerada entropia
+- Modelo bem treinado
+  - Faz as escolhas tomadas pela explotação serem menos aleatórias
+  - Melhora P(a | s)
 
 ### Memória
 
@@ -177,9 +227,9 @@ Atualizam os estados anteriores com base na mudança de expectativa a cada passo
 O RL se divide em quatro grandes paradigmas de acordo com como o algoritmo aprende a tomar decisão:
 
 1. **Baseados em Valor (Value-Based):** Aprendem a estimar a função de valor Q(s, a) e escolhem a ação de maior valor.
-  - Pontua quão bom é cada estado e escolhe o estado disponível com maior ponto.
-  - Usa Tabela Q ou função de valor.
-2. **Baseados em Política (Policy-Based):** Otimizam a política $p_\theta(a|s)$ diretamente, sem precisar de uma tabela Q.
+  - Pontua quão bom é cada ação em cada estado e escolhe o estado disponível com maior ponto.
+  - Usa Tabela Q (Q(s,a)) ou função de valor (V(s)).
+2. **Baseados em Política (Policy-Based):** Otimizam a política $p_\theta(a|s)$ diretamente, sem precisar de uma tabela Q ou função de valor.
   - Busca os parâmetros internos $\theta$ (parâmetros da função política) que dão o melhor retorno.
 3. **Ator-Crítico (Actor-Critic):** Mistura dos 2 tipos acima.
   - O Ator atualiza a política e o Crítico avalia a qualidade da ação.
@@ -191,166 +241,47 @@ Na literatura você encontra muito a divisão entre os baseado em modelo e todo 
 
 ### Baseado em valor (Value-Based)
 
-Estes algoritmos não aprendem a ação diretamente. Eles aprendem a prever o valor Q(s, a) para cada par estado-ação e, no momento da decisão, simplesmente escolhem a ação com maior Q ($\arg\max_a Q(s,a)$).
+Estes algoritmos não aprendem a ação diretamente. Eles aprendem a prever o valor Q(s, a) para cada par estado-ação e, no momento da decisão, simplesmente escolhem a ação com maior Q ($\arg\max_a Q(s,a)$). Ou seja, calculam quão bom é tomar uma ação em determinado estado e passam a depois só escolher sempre a melhor opção.
 
-### Q-Learning
+Os algoritmos dessa família usam como **política uma tabela-Q**, que também é sua memória e aprendizado. É nela que fica guardado o conhecimento aprendido (qual o valor de cada ação em cada estado). Cada estado é uma tabela e cada ação é uma coluna. Assim, se quiser saber quão bom é uma ação A em um estado S é só olhar a linha e coluna respectivos. **A forma de preencher essa tabela muda entre os algoritmos**.
 
-É o algoritmo clássico de RL, sendo o mais simples. Ele constrói uma tabela (Tabela Q) onde as linhas são estados e as colunas são ações. Ele atualiza esses valores usando o erro de **Diferença Temporal (TD Error)**.
+Principais algoritmos:
+- Q-learning
+- Sarsa
+- DQN
 
-- **Quando usar:** Problemas pequenos e discretos com poucos estados e poucas ações (ex: labirintos simples, jogos de tabuleiro em grade).
-- **Tipo:** Off-Policy, Tabular, Model-Free.
-- **Pontos Negativos:**
-  - Inviável para espaços contínuos ou muito grandes (sofre com a "explosão dimensional" da tabela).
-  - Inviável para ações contínuas (ex: girar o volante em $32.5$º).
-- **Função de Custo / Equação de Atualização:** Baseada na Equação de Bellman:
+### Baseado em políticas (Policy-Based)
 
-$$Q(S_t, A_t)_{antigo} = Q(S_t, A_t)_{antigo} + \alpha \left[ R_{t+1} + \gamma \max_a Q(S_{t+1}, a) - Q(S_t, A_t)_{antigo} \right]$$
+Esses algoritmos tomam a decisão de qual ação fazer ao otimizar uma política do agente. Essa política pode ser uma função que recebe parâmetros ou uma rede neural. Conforme vai explorando o mundo (passando os passos) vai alterado os parâmetros de entrada, tornado a escolha da ação mais precisa. 
 
-Onde:
-- $\alpha$ é a taxa de aprendizado.
-- $R_{t+1}$ é a recompensa da ação.
-- $\gamma$ é Fator de Desconto (diminuição da recompensa devido aprendizado atrasado).
-- $Q(S_t, A_t)$ é o valor da tabela.
+Essa política (função ou rede neural) **calcula probabilidades de tomar cada ação**, sem a necessidade da tabela Q. De forma técnica, estes algoritmos otimizam os parâmetros $\theta$ de uma política $P_\theta(a|s)$ **diretamente**.
 
-Ou seja, atualiza a tabela a cada ação de acordo com as recompensas. Ao recebermos a recompensa sabemos quão bom foi essa ação nessa tal situação. Com isso atualizamos a tabela na posição de onde estávamos informando que aquela ação no estado anterior é boa/ruim nesse nível. A função de custo e otimização são a mesma.
+Eles possuem uma fraqueza fatal: seu treinamento é lento e instável. A instabilidade significa que ele aprende e desaprende o tempo todo. O desaprender vem de fazer alterações grandes nos parâmetros da política, tirando ela do seu curso. Isso se deve a eles usarem a recompensa acumulada do episódio para ajustar o peso (recompensa tardia). Isso levou a criação da família ator-crítico, que use essa família com as value-based.
 
-Modelar o que é um estado e como impedir que tenhamos dezenas de milhares de estados é o que faz desafiador programar esse algoritmo, exigindo criatividade e diversos testes do programador. Ex: um labirinto não é inteligente usar a coordenada das casas como estado, pois ao usar um labirinto novo com as paredes em outros lugares ou que seja maior a grande maioria das linhas da tabela não terão sido preenchidas.
-
-### SARSA (State-Action-Reward-State-Action)
-
-Muito semelhante ao Q-Learning, mas é um algoritmo **On-Policy**. Em vez de considerar a melhor ação da tabela ($\max_a Q(S_{t+1}, a)$), o SARSA utiliza a **ação real $A_{t+1}$** escolhida pela política (incluindo o ruído de exploração).
-
-Seu nome é a sigla para Ambiente -> Ação -> Recompensa -> Ambiente -> Ação.
-
-Podemos considerá-lo o Q-Learning cauteloso, pois é mais avesso a explorar e "toma menos risco".
-
-- **Quando usar:** Quando o ambiente possui perigos mortais e o agente não pode se dar ao luxo de ser "otimista demais" durante o treino (ex: robô real andando perto de um precipício, mercado financeiro).
-- **Tipo:** On-Policy, Tabular, Model-Free.
-- **Pontos Negativos:**
-  - Mais lento para encontrar a trajetória perfeita/ótima em comparação com o Q-Learning, pois é mais cauteloso.
-- **Função de Custo / Equação de Atualização:** igual a do Q-learning.
-
-### DQN (Deep Q-Network)
-
-Substitui a tabela Q por uma **Rede Neural Profunda** que calcula o ganho de cada ação. A rede recebe o estado atual S (que pode ser uma imagem de pixels do ambiente) e gera as estimativas Q(S, a) para todas as ações possíveis. 
-
-Para estabilizar o treino de redes neurais em RL, o DQN introduziu duas inovações cruciais: **Replay Buffer** e **Target Network**.
-
-- **Quando usar:** Espaços de **estados complexos e contínuos** (imagens, sensores), mas com **ações discretas** (ex: jogos de Atari, mover para Esquerda/Direita/Pular).
-- **Tipo:** Off-Policy, Baseado em Valor, Deep RL.
-- **Pontos Negativos:**
-  - Tende a superestimar os valores Q (corrigido posteriormente pelo Double DQN).
-  - Incapaz de lidar nativamente com ações contínuas.
-- **Função de Custo:** Erro Quadrático Médio (MSE) sobre o Erro TD:
-- **Otimização:** Gradiente Descendente Estocástico (Adam/RMSprop) com os minibatches definidos pelo Replay Buffer.
-
-### Baseado em política (Policy-Based)
-
-Ao invés de estimar valores de ações para depois escolher a maior, estes algoritmos otimizam os parâmetros $\theta$ de uma política $p_\theta(a|s)$ **diretamente**.
-
-### REINFORCE (Monte Carlo Policy Gradient)
-
-O REINFORCE ajusta os parâmetros (pesos) quem aumentam a probabilidade das ações que resultaram em retornos acumulados altos ($G_t$) e diminuem a probabilidade das ações que geraram retornos baixos.
-
-Seu comportamento é igual a de uma rede neural, aonde os parâmetros são pesos, a função de custo é uma derivada e a função de otimização é o gradiente descendente (que atualiza os pesos iterativamente igual o backpropagation).
-
-- **Quando usar:** Quando as **ações são contínuas** (posso andar 3,45 cm a 18 graus de onde estou) ou problemas onde a política ótima é estocástica.
-- **Tipo:** On-Policy, Policy Gradient, Monte Carlo.
-- **Recompensa**: Só quando encerra.
-- **Pontos Negativos:**
-  - **Alta Variância:** Como usa o retorno completo do episódio ($G_t$), o gradiente oscila drasticamente, tornando o treinamento lento e instável.
-  - Exige a conclusão do episódio inteiro para realizar uma única atualização dos pesos.
-- **Função de Custo / Objetivo:** Maximizar o retorno esperado através do Teorema do Gradiente da Política:
-
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta} \left[ \sum_{t=0}^{T} \nabla_\theta \ln \pi_\theta(A_t | S_t) \cdot G_t \right]$$
-
-- **Otimização:** Subida de Gradiente (Gradient Ascent) nos parâmetros $\theta$ do algoritmo.
-
-### Baseado em modelos (Model-Based)
-
-Enquanto os modelos anteriores apenas reagem ao estado, os algoritmos baseado em modelos tentam **aprender as leis do ambiente** (a função de transição P(S' | S, A) e a função de recompensa R(S, A)). Com isso, eles conseguem **simular o futuro em suas "mentes"** antes de agir no mundo real.
-
-Esses modelos criam simulações do ambiente inteiro e se executam nele para aprender. Só depois são colocados no mundo real.
-
-### AlphaZero / MCTS (Monte Carlo Tree Search)
-
-Combina redes neurais profundas com a busca em árvore de Monte Carlo (MCTS). A rede neural prevê os valores dos estados e as probabilidades de jogada, enquanto a árvore MCTS realiza milhares de simulações do jogo para frente a partir do estado atual para selecionar o melhor movimento.
-
-- **Quando usar:** Jogos determinísticos de informação perfeita com regras claras (Xadrez, Go, Shogi).
-- **Tipo:** Model-Based / Planejamento por Busca em Árvore.
-- **Pontos Negativos:**
-  - Exige um simulador perfeito e determinístico do ambiente para realizar a busca na árvore.
-  - Custo computacional de inferência extremamente alto por jogada.
-
-### Dyna-Q e World Models (MBPO - Model-Based Policy Optimization)
-
-O algoritmo aprende um modelo do mundo simultaneamente enquanto interage com o ambiente real. Em seguida, ele gera "experiências imaginárias" usando esse modelo interno para treinar o agente sem precisar gastar tempo no ambiente real.
-
-- **Quando usar:** Quando interagir com o ambiente real é extremamente caro, perigoso ou demorado (ex: desgaste mecânico de robôs caros, testes clínicos).
-- **Pontos Negativos:**
-  - **Exploitation do Modelo:** Se o modelo do mundo aprendido cometer um pequeno erro, o agente aprenderá a explorar essa falha do modelo ("trapaceando" na simulação) e falhará miseravelmente quando testado no ambiente real.
+Principais algoritmos:
+- Reinforce
 
 ### Ator-Crítico (Actor-Critic)
 
-Em algoritmos do tipo Ator-Crítico a rede Ator representa a Política (decide a ação) e atualiza a política na direção indicada pelo Crítico. Já a rede Crítico representa a Função de Valor (avalia se a decisão da política foi boa ou ruim).
+Em algoritmos do tipo Ator-Crítico a rede Ator representa a Política (decide a ação) e atualiza a política na direção indicada pelo Crítico. Já a rede Crítico representa a Função de Valor (avalia se a decisão da política foi boa ou ruim). Eles conseguem aproveitar as vantagens do policy (atuar em altas dimensões e ambientes aleatórios) sem suas desvantagens (lentidão de convergência e desaprender).
 
-```
-       +---------------------------------------------+
-       |                  Ambiente                   |
-       +---------------------------------------------+
-          ^                                    |
-          | Ação (A_t)                         | Estado (S_t), Recompensa (R_t)
-          |                                    v
-   +--------------+  Vantagem A(s,a)   +---------------+
-   | ATOR (Policy)| <----------------- | CRÍTICO(FV)|
-   +--------------+                    +---------------+
-```
+Principais algoritmos:
+- A3C
+- PPO
+- TRPO
+- SAC
 
-### A2C / A3C (Advantage Actor-Critic)
+### Baseado em modelos (Model-Based)
 
-Usa a função de **Vantagem (A(s, a) = Q(s, a) - V(s))** em vez do retorno bruto $G_t$. A vantagem indica o quanto uma ação específica foi melhor do que a ação média esperada para aquele estado. Ele é executado em multi-threads para explorar as possibilidades de ação. Ele cria uma cópia do ambiente para cada thread para ser atualizada pelo respectivo modelo.
+Esses algoritmos constroem ou utilizam uma representação interna das dinâmicas do ambiente (um "modelo") que prevê as probabilidades de mudança de estado e as recompensas. Ou seja, ele recria todo o ambiente internamente e **faz simulações para aprender ao invés de interagir com o mundo real**. 
 
-O **A2C** é a versão síncrona (espera todos os agentes paralelos terminarem o passo para só então atualizar a rede neural) enquanto o **A3C** é a versão assíncrona (todos atualizam uma rede central de forma assíncrona).
+Enquanto os modelos anteriores apenas reagem ao estado, os algoritmos baseado em modelos tentam **aprender as leis do ambiente e a função de recompensa**. Com isso, eles conseguem simular o futuro em suas "mentes" antes de agir no mundo real. Aprender as leis do ambiente (regras ou leis físicas) é feito através de redes neurais e dados sintéticos produzidos por modelos já conhecidos do mundo. Aprender as recompensas vai pela mesma linha. Ter de descobrir quantos pontos dar ou tirar, além de descobrir como o mundo funciona tornam essa família consideravelmente mais complexa que os demais.
 
-- **Quando usar:** Ambientes com aceleradores de hardware e necessidade de treinar em ambientes paralelos para diversidade de dados.
-- **Tipo:** On-Policy, Actor-Critic.
-- **Pontos Negativos:** Sensível à escolha de taxas de aprendizado entre o Ator e o Crítico.
-
-### PPO (Proximal Policy Optimization)
-
-É atualmente o **algoritmo padrão do estado da arte** para a maioria dos problemas de RL. O PPO resolve a instabilidade dos gradientes de política limitando o quanto a nova política pode se afastar da política antiga a cada atualização. Isso impede que o agente dê um "passo de gradiente desastroso" que destrua o aprendizado prévio.
-
-- **Quando usar:** Algoritmo de uso geral excelente para **ações contínuas e discretas**, controle de robótica, jogos complexos e alinhamento de LLMs.
-- **Tipo:** On-Policy, Actor-Critic.
-- **Pontos Negativos:**
-  - Por ser On-Policy, exige mais amostras totais de interação do que algoritmos Off-Policy.
-- **Otimização:** Subida de gradiente estocástico com múltiplas épocas sobre minibatches de dados coletados.
-- **Função de Custo:**
-
-$$L(\theta) = \hat{E}_t \left[ \min\left( r_t(\theta)\hat{A}_t, \, \text{clip}(r_t(\theta), 1-e, 1+e)\hat{A}_t \right) \right]$$
-
-Aonde 
-
-- $r_t(\theta) = \frac{p_\theta(a_t|s_t)}{p_{\theta_{antigo}}(a_t|s_t)}$ é a razão de probabilidade entre a política nova e a antiga
-- e é o parâmetro de corte (geralmente $0.1$ ou $0.2$).
-
-### SAC (Soft Actor-Critic)
-
-O SAC é um algoritmo Off-Policy focado em maximizar não apenas a recompensa acumulada, mas também a **Entropia da Política**. Isso força o agente a explorar o ambiente ao máximo e manter ações tão aleatórias quanto possível, desde que continuem cumprindo a tarefa.
-
-- **Quando usar:** **Controle robótico contínuo** e cenários reais onde a **eficiência de amostras é crítica** e o ambiente exige alta robustez contra perturbações.
-- **Tipo:** Off-Policy, Actor-Critic, Máxima Entropia.
-- **Pontos Negativos:**
-  - Alta complexidade matemática e muitos hiperparâmetros para ajustar.
-  - Inviável para espaços de ações discretas na sua formulação padrão.
-- **Função de Custo / Objetivo:**
-
-$$J(p) = \sum_{t=0}^{T} E_{(s_t, a_t) \sim \rho_p} \left[ R(s_t, a_t) + \alpha H(p(\cdot | s_t)) \right]$$
-
-Aonde: 
-
-- H é a Entropia da política 
-- $\alpha$ é o parâmetro de temperatura que controla o peso da exploração.
+Principais algoritmos:
+- MCTS (usado no AlphaZero)
+- Dyna-Q
+- MBPO
+- Dreamer
 
 ## Dilema Exploração vs. Explotação
 
@@ -372,69 +303,41 @@ O equilíbrio entre os dois é o dilema central do aprendizado por reforço. Sem
 - Quando estamos próximos do limite de passos (já estamos no final, vamos com o que temos)
 - Quando estamos no meio do treino e o tempo é curto ou temos pouco orçamento (precisamos encerrar logo o treino)
 
-Existem diversos algoritmos que escolhem entre as duas abordagens:
+A cada passo devemos escolher entre um dos dois. Existem diversos algoritmos que define qual dos dois será usado no passo atual. Cada um será melhor detalhado na pasta `05-exploracao-explotacao`.
 
+- Epsilon-Greedy
 - Bônus de Entropia
 - Softmax
 - Limite Superior de Confiança (UCB)
 - Amostragem de Thompson (abordagem bayesiana)
 
-### Bônus de Entropia
-
-***TODO***
-
-### Softmax
-
-***TODO***
-
-### Limite Superior de Confiança (UCB)
-
-***TODO***
-
-### Amostragem de Thompson (abordagem bayesiana)
-
-***TODO***
-
-### Resumo Comparativo
-
-| Estratégia | Tipo de Decisão | Ponto Forte | Ponto Fraco |
-| :---       | :---            | :---        | :---        |
-| Softmax | Probabilística (proporcional ao Valor) | Atribui probabilidades com base no valor estimado; evita explorar ações sabidamente ruins. | Sensível à escala das recompensas e exige o ajuste fino do parâmetro de Temperatura (T). |
-| UCB | Determinística (guiada por Incerteza) | Eficiente; prioriza o que é menos conhecido. | Difícil de escalar para espaços de estados contínuos. |
-| Thompson | Probabilística (Bayesiana) | Altamente eficiente no uso de dados. | Requer modelagem matemática das distribuições. |
-| Bônus de Entropia | Contínua na Função Objetivo | Padrão da indústria em RL Profundo | Requer ajuste fino do bônus de entropia B |
-
 ## Métricas de Qualidade e Comparação entre Modelos
 
-Métricas tradicionais Acurácia, R² ou Erro Quadrático Médio não funcionam aqui. Para medir o sucesso global da política, o RL utiliza métricas focadas no acúmulo de recompensa e estabilidade:
+Métricas tradicionais Acurácia, R² ou Erro Quadrático Médio não funcionam aqui. Para medir o sucesso global da política, o aprendizado por reforço utiliza métricas únicas.
 
-***TODO*** (entender melhor e disecar elas)
+### 1. Recompensa Acumulada/Total
 
-### 1. Recompensa Acumulada/Total ($G_t$)
-É a soma das recompensas obtidas ao longo dos episódios:
+É a soma das recompensas obtidas ao longo dos episódios. A cada episódio calcula a recompensa total que teve até alcançar o objetivo (ou estourar o limite). A recompensa acumulada nos dá quão bem a IA foi na exploração, se escolheu bons caminhos ou se cometeu muitos erros. **Quanto maior a recompensa acumulada, melhor**.
 
-$$G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$$
+### 2. Curva de Aprendizado
 
-Aonde: 
-- $\gamma$ é o **fator de desconto** (dá mais valor a recompensas imediatas do que a recompensas no futuro distante). Vai de 0 a 0.9999999.
-- R é recompensa de cada momento.
-
-### 2. Curva de Aprendizado (Curva de Recompensa Média por Episódio)
-Plota a recompensa total média obtida pelos episódios ao longo do tempo de treino.
+É o gráfico da métrica anterior, mostrando como ela mudou ao longo do treino. Podemos plotar o gráfico da recompensa acumulada em cada episódio e ver se seu comportamento. Como em cada episódio ela é zerada, se o valor do episódio seguinte for maior é sinal que ele aprendeu a tomar boas decisões. O esperado é que ele **vá crescendo e de preferência com a menor flutuação possível**.
 
 - **Modelo Bom:** Apresenta uma curva ascendente estável que atinge um patamar alto (convergência).
 
 - **Modelo Instável:** Apresenta oscilações drásticas (o agente aprende, desaprende e despenca o desempenho).
 
-### 3. Eficiência de Amostra
-Mede **quantos passos (interação no ambiente)** o modelo precisou para atingir uma determinada pontuação.
+### 3. Número de Passos
 
-- Em robótica real ou simuladores lentos, o algoritmo com **maior eficiência de amostra é o vencedor**, mesmo que demore mais tempo computacional por passo. **O importante é tomar menos ações, não gastar menos tempo**.
+Mede **quantos passos (interação no ambiente)** o modelo precisou para atingir uma determinada pontuação. Isso significa que ele **alcançou o objetivo mais rápido que os demais** e que não estourou o limite máximo de passos.
 
-### 4. Entropia da Política (H(p))
-Mede a entropia, ou seja, o grau de incerteza que a política tem sobre o que fazer. **Um bom modelo vai aprendendo gradualmente, portanto a entropia deve cair lentamente e finalizar em um valor baixo ESTÁVEL.**
+- Em robótica real ou simuladores lentos, o algoritmo com **menor número de passos é o vencedor**, mesmo que demore mais tempo computacional por passo. **O importante é tomar menos ações, não gastar menos tempo**.
 
-Um modelo ruim pode acontecer uma dessas 3 coisas:
+### 4. Entropia da Política
+
+Mede a entropia, ou seja, o grau de incerteza que a política tem sobre o que fazer. Calculamos com a equação de Shannon como explicado no tópico de Entropia. Nós anotamos a entropia de cada episódio e plotamos o gráfico de sua mudança ao final.
+
+**Um bom modelo vai aprendendo gradualmente, portanto a entropia deve cair lentamente e finalizar em um valor baixo ESTÁVEL.** Um modelo ruim pode acontecer uma dessas 3 coisas:
 
 - **Entropia despenca logo no início**: indica que o agente parou de explorar. 
   - Descobriu um mínimo local, descobriu uma forma de não ser punido e não faz mas nada ou então ganhou uma recompensa boa e se contentou com o pouco.
@@ -453,11 +356,11 @@ Um modelo ruim pode acontecer uma dessas 3 coisas:
 
 ## COMPARATIVO GERAL DOS ALGORITMOS DE RL
 
-| Algoritmo | Tipo | Espaço de Ações | Eficiência de Amostra | Estabilidade de Treino | Casos de Uso Principais |
+| Algoritmo | Espaço de Ações | Número de Passos | Estabilidade de Treino | Casos de Uso Principais | Observação |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Q-Learning** | Model-Free / Value | Discreto | Baixa | Alta | Problemas de grid simples, didático |
-| **DQN** | Model-Free / Value | Discreto | Média | Média | Jogos retrô (Atari), decisões discretas |
-| **REINFORCE** | Model-Free / Policy | Discreto / Contínuo | Muito Baixa | Baixa | Problemas simples de controle, didático |
-| **PPO** | Model-Free / Actor-Critic | Discreto / Contínuo | Média | **Muito Alta** | **Padrão da Indústria, Robótica, RLHF** |
-| **SAC** | Model-Free / Actor-Critic | Contínuo | **Muito Alta** | Alta | Robótica real, controle de precisão |
-| **AlphaZero** | Model-Based / Tree Search | Discreto | Alta (com simulador) | Alta | Jogos de tabuleiro (Go, Xadrez) |
+| **Q-Learning** | Discreto | Baixa | Alta | Problemas de grid simples | **Didático** |
+| **DQN** | Discreto | Média | Média | Jogos retrô, decisões discretas | --- |
+| **REINFORCE** | Discreto / Contínuo | Muito Baixa | Baixa | Problemas simples de controle | **Didático** |
+| **PPO** | Discreto / Contínuo | Média | **Muito Alta** | **Padrão da Indústria, Robótica, RLHF** | **Estado da arte** |
+| **SAC** | Contínuo | **Muito Alta** | Alta | Robótica real, controle de precisão | --- |
+| **AlphaZero** | Discreto | Alta (com simulador) | Alta | Jogos de tabuleiro (Go, Xadrez) | --- |
