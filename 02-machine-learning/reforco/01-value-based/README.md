@@ -134,11 +134,80 @@ while not done and passos < max_passos:
 
 ## DQN (Deep Q-Network)
 
-Substitui a tabela Q por uma **Rede Neural Profunda** que calcula o ganho de cada ação. A rede recebe o estado atual S (que pode ser uma imagem de pixels do ambiente) e gera as estimativas Q(S, a) para todas as ações possíveis. Ou seja, a rede tem uma saída para cada ação possível.
+Substitui a tabela Q por uma **Rede Neural Profunda** que calcula o ganho de cada ação. A rede recebe o estado atual S (que pode ser uma imagem de pixels do ambiente) e gera as estimativas Q(S, a) para todas as ações possíveis. Ou seja, a **rede tem uma saída para cada ação possível**. A saída de maior valor é escolhida como a ação a ser feita.
 
 Foi pioneiro em 2013 quando a DeepMind o usou para ensiar uma IA a jogar jogos de Atari, recebendo os pixels da tela. Algoritmos mais avançados como PPO e A3C são melhores hoje.
 
+D DQN **pode usar qualquer rede neural profunda**, mas ficou muito associada as redes neurais convolucionais por causa do seu uso pelo DeepMind para os jogos de Atari. O DeepMind escolheu a rede convolucional por ser adaptada para tratar imagens. Como a entrada era a tela do jogo naquele instante (uma matriz de pixels, uma imagem) essa arquitetura de rede era a ideal para esse fim. Mas isso não significa que ele funcione apenas com esse.
+
+### Funcionamento da Rede Neural
+
+A rede neural recebe como entrada o estado atual S (no caso do Atari, uma imagem), processa com a rede neural e retorna a função de valor Q(s, a) para cada ação. A saída 1 é o valor de realizar a ação 1 Q(s, a1) e assim por diante.
+
+O treino da rede neural acontece através do erro da rede com a equação de Bellman. Após escolher a maior saída como ação a fazer, executa-se a missão e pegamos a recompensa junto do próximo estado. Com o retorno do ambiente (recompensa e próximo estado) calculamos a equação de Bellman igual no SARSA. A diferençe entre a equação e o valor Q(s,a) retornado pela rede (valor escolhido pela gente, referente a ação tomada) é o nosso erro. Esse **erro é a base da função de custo derivada pelo backpropagation para atualização da rede**. 
+
+```
+  ┌──────────────┐
+  │    ESTADO    │
+  │Imagem do jogo│
+  │+Replay Buffer│
+  └─────┬────────┘
+        │
+        ▼
+  ┌─────────────┐
+  │ Rede Neural │
+  └─────┬───────┘
+        │
+        ▼
+  ┌───────────────┐
+  │ Saída da rede │
+  │ Q1 Q2 Q3 ...  │
+  └─────┬─────────┘
+        │
+        ▼
+  EXECUTA AÇÃO Qi
+        │
+  ┌─────┴─────┐
+  ▼           ▼
+recompensa   próximo
+  │           estado
+  └─────┬─────┘
+        ▼
+Equação de Bellman
+        │
+        ▼
+       erro (Bellman - Qi)
+        │
+        ▼
+ Backpropagation
+        │
+        ▼
+ atualiza pesos da rede neural
+```
+
+O cálculo da função de custo dessa rede é:
+
+$$L = \frac{[y - Q(s,a)]^2}{2}$$
+
+Aonde:
+- y é a equação de Bellman (que usa a recompensa e o próximo estado após executarmos a ação no ambiente).
+- Q(s,a) é a saída da rede neural para a ação escolhida.
+
+É a partir dessa equação de custo que o backpropagation calcula a correção dos pesos. Repare que y - Q(s,a) é nosso erro: diferença entre o real (Bellman) e o previsto (saída da rede neural). Logo a função de custo é $\text{erro}^2/2$ e a derivada é o próprio erro. Minimizando o erro fazemos a rede se comportar igual a função de Bellman.
+
+### Replay Buffer e Target Network
+
 Para estabilizar o treino de redes neurais em RL, o DQN introduziu duas inovações cruciais: **Replay Buffer** e **Target Network**.
+
+O Replay Buffer é uma memória onde o agente guarda suas experiências (conjunto de estado, ação, recompensa, estado seguinte e se concluiu). Cada experiência é um registro completo de onde estava, o que fez e o que aconteceu após sua ação. Ao treinar a rede normalmente ela **aprende apenas considerando o passo anterior, sem memória de todas as decisões que a levaram até lá**. Isso causa muita **instabilidade no treino**, dificultando encontrar um comportamento útil.
+
+O que o **Replay Buffer faz é sortear um batch de X experiências passadas e usá-los no treino**.  As experiências passadas não precisam estar em ordem e não precisam ser próximas de si. Pode ser uma do início do episódio e uma do fim. Correlação temporal não é importante e deve ser quebrada nesse sorteio. Isso melhora a estabilidade e também permite reutilizar experiências antigas.
+
+O **Target Network é uma cópia separada da rede principal** usada para calcular os valores-alvo do treinamento (equação de Bellman). Enquanto a rede principal recebe o estado atual e Replay Buffer, responde o próximo passo e atualiza seus pesos a cada passo, o Target Network busca calcular a função de Bellman para o estado atual, sem saber a ação e escolhida e o próximo estado. Ele é atualizado com menos frequência (geralmente a cada N iterações ou por cópia periódica dos pesos da rede principal). 
+
+Essa separação é importante porque a equação de Bellman usa um valor futuro estimado, e se esse valor for calculado pela mesma rede que está sendo treinada o alvo muda continuamente durante o ajuste dos pesos. **Isso é outra causa de instabilidade** no aprendizado. Com a Target Network, a rede principal aprende a aproximar um alvo mais estável, enquanto a rede alvo fornece valores de referência mais consistentes. Em outras palavras, ela reduz a correlação entre o alvo e a própria atualização, tornando o treinamento do DQN muito mais robusto.
+
+### Resumo
 
 - **Quando usar:** Espaços de **estados complexos e contínuos** (imagens, sensores), mas com **ações discretas** (ex: mover para Esquerda/Direita/Pular).
 - **Tipo:** Off-Policy, Baseado em Valor, Deep RL.
