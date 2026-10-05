@@ -37,6 +37,19 @@ $$\nabla_\theta J(\theta) = E_{P_\theta} \left[ \sum_{t=0}^{T} \nabla_\theta \ln
   - **Lentidão:** Exige a conclusão do episódio inteiro para realizar uma única atualização dos pesos (por causa do Monte Carlo).
   - **Convergência Lenta:** Pode ficar preso em máximos locais devido a atualizações ruidosas.
 
+## Tipo de Rede Neural
+
+Não existe uma arquitetura única para o REINFORCE. Qualquer uma pode ser usada a depender da natureza do estado (entrada) e do espaço de ações (saídas).
+
+- **MLP:** quando o estado é um vetor de atributos numéricos (posições, velocidades, ângulos...)
+  - Ex: jogo snake. Estado = afrente ocupado (0), esquerda livre (1), direita livre(1), distância afrente para comida (10), distância a esquerda da comida (-5).
+- **CNN:** quando o estado é uma imagem ou matrizes visuais
+- **RNN/LSTM:** quando o ambiente é parcialmente observável ou depende do histórico de estados passados ou dados temporais
+
+O que mais define a rede neural do REINFORCE não é sua arquitetura, mas sua camada de saída. Quando as ações são discretas (ex: seguir reto, virar a esquerda...) a última camada possui 1 neurônio para cada ação e usa a função de ativação Softmax. Isso converte as saídas numéricas brutas (logits) em uma distribuição de probabilidade (cuja soma é 1) para as ações.
+
+Quando as ações são contínuas (ex: quantos graus virar um volante, quantos graus subir a temperatua...) as coisas mudam. A rede deixa de dizer a ação a ser feita (como no caso discreto) e passa dizer quais são os parâmetros da distribuição normal que forma os dados já observados. A camada de saída tem 2 neurônios, um retorna a média e outro o desvio padrão da curva normal. Aplicando a curva normal decidimos qual ação tomar.
+
 ## Conceitos Usados no REINFORCE
 
 ### Política Parametrizada ($P_\theta$)

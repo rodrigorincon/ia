@@ -1,0 +1,355 @@
+import random
+from typing import List, Tuple
+from matplotlib import pyplot as plt
+import numpy as np
+import torch
+import torch.nn as nn
+
+# cria novo tipo de variavel para uma posicao no labirinto
+Point = Tuple[int, int]
+
+# Ambiente em qua a IA vai agir. O AMBIENTE É RESPONSAVEL POR DEFINIR O VALOR DA RECOMPENSA
+class RoboAspiradorEnv:
+	size: int
+	max_battery: int
+	base: Point
+	initial_obstacles: List[Point]
+	robot_pos: Point
+	last_pos: Point | None
+	battery: int
+	step_count: int
+	dirt_map: np.ndarray
+	obstacles: List[Point]
+
+	def __init__(self, size=6, max_battery=20):
+		self.size = size
+		self.max_battery = max_battery
+		self.base = (0, 0)  # Estação de Recarga / Base
+
+		# Obstáculos dinâmicos iniciais (móveis/pessoas/pets)
+		self.initial_obstacles = [(2, 2), (4, 3)]
+		self.reset()
+
+	def reset(self):
+		self.robot_pos = self.base
+		self.last_pos = None
+		self.battery = self.max_battery
+		self.step_count = 0
+
+		# Mapa de Sujeira: 1 = Sujo (precisa limpar), 0 = Limpo. começa com tudo sujo
+		self.dirt_map = np.ones((self.size, self.size), dtype=int)
+		self.dirt_map[self.base] = 0  # A base começa limpa
+
+		# Posições dos obstáculos móveis
+		self.obstacles = list(self.initial_obstacles)
+
+		return self.get_state()
+
+	# Move os obstáculos levemente para células adjacentes
+	def move_obstacles(self):
+		for i in range(len(self.obstacles)):
+			row, col = self.obstacles[i]
+			vizinhos_livres: List[Point] = []
+			# testa todas as casas vizinhas e guarda no array as casas possíveis para o obstaculo ir
+			for desloc_row, desloc_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+				new_row, new_col = row + desloc_row, col + desloc_col
+				# Não pode mover para fora do mapa, nem para a base, nem para cima do robô
+				if 0 <= new_row < self.size and 0 <= new_col < self.size:
+					if (new_row, new_col) != self.base and (new_row, new_col) != self.robot_pos:
+						vizinhos_livres.append((new_row, new_col))
+
+			# 30% de chance do obstáculo mudar de lugar. Escolhe aleatoriamente um dos vizinhos livres
+			if vizinhos_livres and random.random() < 0.30:
+				self.obstacles[i] = random.choice(vizinhos_livres)
+
+	# No Q-Learning o estado era a tupla (linha, coluna, bateria, se a celula atual está suja, ultima_posicao).
+	# Lá não dava pra colocar o mapa de sujeira inteiro no estado: cada combinação de casas sujas viraria uma linha nova na tabela
+	# (2^36 combinações) e a IA nunca veria o mesmo estado duas vezes.
+	# Com uma rede neural isso não é problema: ela recebe um vetor de números e GENERALIZA entre estados parecidos.
+	# Então damos a ela a visão completa do cômodo, o que deixa bem mais fácil decidir para onde ir.
+	# Estado = vetor concatenando:
+	#   - posição do robô (one-hot 6x6 = 36)
+	#   - mapa de sujeira (6x6 = 36)
+	#   - mapa de obstáculos (6x6 = 36)
+	#   - bateria normalizada entre 0 e 1 (1)
+	#   - de que lado está a última posição (one-hot: nenhuma, cima, baixo, esquerda, direita = 5)
+	def get_state(self):
+		posicao = np.zeros((self.size, self.size))
+		posicao[tuple(self.robot_pos)] = 1
+
+		obstaculos = np.zeros((self.size, self.size))
+		for r, c in self.obstacles:
+			obstaculos[r, c] = 1
+
+		bateria = [self.battery / self.max_battery]
+
+		ultima = [0, 0, 0, 0, 0]
+		if self.last_pos is None:
+			ultima[0] = 1
+		else:
+			desloc = (self.last_pos[0] - self.robot_pos[0], self.last_pos[1] - self.robot_pos[1])
+			ultima[1 + [(-1, 0), (1, 0), (0, -1), (0, 1)].index(desloc)] = 1
+
+		return np.concatenate([posicao.flatten(), self.dirt_map.flatten(), obstaculos.flatten(), bateria, ultima]).astype(np.float32)
+
+	# Ações: Cima=0, Baixo=1, Esquerda=2, Direita=3
+	def step(self, action):
+		self.step_count += 1
+		self.battery -= 1  # Consumo constante de bateria a cada passo
+
+		# Movimentação leve dos obstáculos a cada 3 passos
+		if self.step_count % 3 == 0:
+			self.move_obstacles()
+
+		acoes_possiveis = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+		desloc_row, desloc_col = acoes_possiveis[action]
+		new_row, new_col = self.robot_pos[0] + desloc_row, self.robot_pos[1] + desloc_col
+
+		reward = 0.0
+		done = False
+		prev_pos = self.robot_pos
+
+		# Colisão com paredes ou obstáculos móveis
+		if not (0 <= new_row < self.size and 0 <= new_col < self.size) or (new_row, new_col) in self.obstacles:
+			reward -= 10.0  # Penalidade por colisão
+			# Robô permanece na mesma posição (não vai pra casa ja ocupada)
+		else:
+			# Penalidade adicional caso tente retornar imediatamente à posição anterior
+			# Assim como no Q-Learning, não criamos regras (ifs e código) proibindo certos movimentos.
+			# Ao invés disso permitimos mas damos penalidades para essa ação e deixamos a IA aprender a não fazer isso
+			if self.last_pos is not None and (new_row, new_col) == self.last_pos:
+				reward -= 15.0  # Penaliza o movimento de retorno imediato (evita ir e voltar pra mesma casa)
+			self.last_pos = prev_pos
+			self.robot_pos = (new_row, new_col)
+
+		row, col = self.robot_pos
+
+		# Limpeza da Célula
+		if self.dirt_map[row, col] == 1:
+			self.dirt_map[row, col] = 0
+			reward += 20.0  # Alta recompensa por limpar área suja
+		else:
+			reward -= 0.5  # Custo de deslocamento em área já limpa
+
+		# Retorno à Base e Gestão de Bateria
+		if tuple(self.robot_pos) == self.base:
+			if self.battery > 0 and self.all_clean():
+				# Sucesso: Retornou à base antes de descarregar totalmente
+				reward += 100.0
+				done = True
+			elif 0 < self.battery < self.max_battery and not self.all_clean():
+				# Recarrega se estiver de passagem pela base
+				self.battery = self.max_battery
+				reward += 5.0
+
+		# bateria acabou sem limpar tudo
+		elif self.battery <= 0 and not done and not self.all_clean():
+			# Falha crítica: Descarregou totalmente fora da base
+			reward -= 100.0
+			done = True
+		# bateria acabou após limpar tudo mas antes de chegar na base
+		elif self.battery <= 0 and done and self.all_clean():
+			reward -= 30.0
+			done = True
+
+		return self.get_state(), reward, done
+
+	def all_clean(self):
+		obstacle_set = {tuple(obs) for obs in self.obstacles}
+		# checa se todas as celulas são 0 ignorando as que são obstaculos
+		for row in range(self.size):
+			for col in range(self.size):
+				if (row, col) not in obstacle_set and self.dirt_map[row, col] == 1:
+					return False
+		return True
+
+
+# A POLÍTICA P_θ(a|s): rede neural que recebe o vetor de estado e devolve a probabilidade de cada uma das 4 ações
+class PoliticaRede(nn.Module):
+	def __init__(self, n_entradas, n_acoes, n_neuronios=128):
+		super().__init__()
+		self.rede = nn.Sequential(
+			nn.Linear(n_entradas, n_neuronios),
+			nn.ReLU(),
+			nn.Linear(n_neuronios, n_neuronios),
+			nn.ReLU(),
+			nn.Linear(n_neuronios, n_acoes),
+			nn.Softmax(dim=-1), # transforma a saída em probabilidades (soma = 1)
+		)
+
+	def forward(self, x):
+		return self.rede(x)
+
+
+# modelo da IA. É aqui que ao algoritmo é executado
+class ReinforceVacuumAgent:
+	politica: PoliticaRede
+	otimizador: torch.optim.Optimizer
+	gamma: float
+	n_actions: int
+	coef_entropia: float
+	log_probs: List[torch.Tensor]
+	entropias: List[torch.Tensor]
+	recompensas: List[float]
+
+	def __init__(self, n_entradas, alpha=0.001, gamma=0.99, coef_entropia=0.01):
+		self.gamma = gamma
+		self.n_actions = 4  # Cima, Baixo, Esquerda, Direita
+		self.politica = PoliticaRede(n_entradas, self.n_actions)
+		self.otimizador = torch.optim.Adam(self.politica.parameters(), lr=alpha)
+		self.coef_entropia = coef_entropia
+		# memória do episódio atual. O REINFORCE só aprende quando o episódio acaba (Monte Carlo)
+		self.log_probs = []
+		self.entropias = []
+		self.recompensas = []
+
+	# Não há Epsilon-Greedy: a exploração vem do sorteio da ação a partir das probabilidades da rede
+	# deterministico=True escolhe sempre a ação mais provável (usado depois de treinado)
+	def choose_action(self, state, deterministico=False):
+		probs = self.politica(torch.from_numpy(state))
+		if deterministico:
+			return torch.argmax(probs).item()
+		distribuicao = torch.distributions.Categorical(probs)
+		action = distribuicao.sample()
+		self.log_probs.append(distribuicao.log_prob(action)) # guarda log P_θ(a|s) para o gradiente no fim do episódio
+		self.entropias.append(distribuicao.entropy()) # o quão "indecisa" a política está nesse estado (ver learn)
+		return action.item()
+
+	# só guarda a recompensa. No Q-Learning aprendiamos a cada passo, aqui esperamos o episódio terminar
+	def store_reward(self, reward):
+		self.recompensas.append(reward)
+
+	# chamado ao fim do episódio: calcula os retornos e atualiza os pesos da rede
+	def learn(self):
+		# Retorno G_t de cada passo, de trás pra frente: G_t = R_{t+1} + γ*G_{t+1}
+		retornos = []
+		G = 0.0
+		for r in reversed(self.recompensas):
+			G = r + self.gamma * G
+			retornos.insert(0, G)
+		retornos = torch.tensor(retornos)
+
+		# Normalização dos retornos (média 0 e desvio padrão 1) para diminuir a ALTA VARIÂNCIA do REINFORCE.
+		# As recompensas desse ambiente vão de -100 a +100, sem normalizar as atualizações dos pesos seriam enormes e instáveis.
+		# Dentro de cada episódio, ações acima da média ganham probabilidade e as abaixo perdem (funciona como um "baseline")
+		if len(retornos) > 1:
+			retornos = (retornos - retornos.mean()) / (retornos.std() + 1e-8)
+
+		# L = - sum(log P_θ(a_t|s_t) * G_t). Sinal de menos pois o PyTorch minimiza e queremos subida de gradiente
+		loss = -(torch.stack(self.log_probs) * retornos).sum()
+
+		# Bônus de entropia: subtrai a entropia da loss, ou seja, recompensa a rede por continuar um pouco indecisa.
+		# Sem ele a política desse ambiente às vezes "colapsa": fica 100% confiante numa ação ruim (ex: bater sempre na mesma parede),
+		# a entropia vai a zero e ela nunca mais sorteia outra ação, então não tem como descobrir que existia algo melhor.
+		# A normalização piora isso: mesmo num episódio péssimo metade das ações fica "acima da média" e é reforçada.
+		# É o equivalente do min_epsilon do Q-Learning: garante sempre uma pitada de exploração
+		loss = loss - self.coef_entropia * torch.stack(self.entropias).sum()
+
+		self.otimizador.zero_grad()
+		loss.backward()
+		self.otimizador.step()
+
+		# limpa a memória para o próximo episódio (on-policy: só aprende com dados da política atual)
+		self.log_probs = []
+		self.entropias = []
+		self.recompensas = []
+
+
+# cria o ambiente, IA e a treina
+env = RoboAspiradorEnv(size=6, max_battery=100)
+agent = ReinforceVacuumAgent(n_entradas=len(env.get_state()))
+episodes = 3_000 # bem menos episódios que o Q-Learning: a rede generaliza entre estados parecidos, a tabela precisava visitar cada um
+max_passos = 1_000
+recompensas_por_episodio = []
+passos_por_episodio = []
+for ep in range(episodes):
+	if(ep % 100 == 0): print('TREINAMENTO EPISODIO ', ep)
+	state = env.reset()
+	done = False
+	total_reward = 0
+
+	while not done and env.step_count < max_passos:
+		action = agent.choose_action(state)
+		next_state, reward, done = env.step(action)
+		agent.store_reward(reward)
+		state = next_state
+		total_reward += reward
+
+	# fim do episódio: agora o agente aprende com tudo o que aconteceu
+	agent.learn()
+	recompensas_por_episodio.append(total_reward)
+	passos_por_episodio.append(env.step_count)
+
+# ============================ IA TREINADA. AGORA MOSTRA ELA FUNCIONANDO ============================
+state = env.reset()
+done = False
+
+trajetoria = [list(env.robot_pos)]
+acoes_nomes = ['Cima', 'Baixo', 'Esquerda', 'Direita']
+
+print('\n\n--- SIMULAÇÃO DE NAVEGAÇÃO APÓS O TREINAMENTO ---')
+step_idx = 0
+max_steps = 10_000
+while not done and step_idx < max_steps:
+	# Desativa exploração para o teste final (sempre a ação mais provável). no_grad pois não vamos mais treinar
+	with torch.no_grad():
+		action = agent.choose_action(state, deterministico=True)
+	state, reward, done = env.step(action)
+	trajetoria.append(list(env.robot_pos))
+	step_idx += 1
+
+	# imprime o mapa com mostrando cada passo
+	grid_visual = np.full((env.size, env.size), ' [ . ] ', dtype=object)
+	# popula o mapa com as casas sujas, base e robo
+	for r in range(env.size):
+		for c in range(env.size):
+			if (r, c) == env.base:
+				grid_visual[r, c] = ' [ B ] '  # Base de Carregamento
+			if env.dirt_map[r, c] == 1:
+				grid_visual[r, c] = ' [ * ] '  # Célula não limpa
+			if env.robot_pos[0] == r and env.robot_pos[1] == c:
+				grid_visual[r, c] = ' [ o ] '
+	# Marca os obstáculos móveis
+	for r, c in env.obstacles:
+		grid_visual[r, c] = ' [ X ] '  # Obstáculo móvel
+	# mostra na tela o mapa
+	for r in range(env.size):
+		linha_str = ''.join(grid_visual[r, :])
+		print(linha_str)
+	print('---------------\n')
+
+# imprimindo estatistica do desempenho da IA
+celulas_limpas = np.sum(env.dirt_map == 0)
+total_celulas = env.size * env.size
+porcentagem_limpa = (celulas_limpas / total_celulas) * 100
+print('\n------------------------- ESTATISTICAS -------------------------')
+if(not done): print('IA NÃO CONSEGUIU CONCLUIR O TRABALHO')
+print(f'• Área Limpa: {celulas_limpas}/{total_celulas} células ({porcentagem_limpa:.1f}%)')
+print(f'• Bateria Restante ao Retornar à Base: {env.battery}/{env.max_battery}')
+print(f'• Movimento do Robô (Total de Passos): {len(trajetoria) - 1}')
+
+
+# VISUALIZAÇÃO: CURVA DE APRENDIZADO
+# Tira a média móvel de 30 episódios para mostrar uma curva mais suave com a tendência
+media_movel = np.convolve(recompensas_por_episodio, np.ones(30) / 30, mode='valid')
+plt.figure(figsize=(9, 5))
+plt.plot(recompensas_por_episodio, alpha=0.3, color='gray', label='Episódio')
+plt.plot(media_movel, color='blue', linewidth=2, label='Média Móvel (30 ep)')
+plt.title('Evolução do Aprendizado — REINFORCE')
+plt.xlabel('Episódio')
+plt.ylabel('Recompensa Total')
+plt.legend()
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.show()
+
+# VISUALIZAÇÃO: Número de Passos em cada episódio
+media_movel_passos = np.convolve(passos_por_episodio, np.ones(30) / 30, mode='valid')
+plt.figure(figsize=(9, 5))
+plt.plot(passos_por_episodio, alpha=0.3, color='gray', label='Episódio')
+plt.plot(media_movel_passos, color='blue', linewidth=2, label='Média Móvel (30 ep)')
+plt.title('Evolução da quantidade de passos — REINFORCE')
+plt.xlabel('Episódio')
+plt.ylabel('Num Passos')
+plt.legend()
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.show()
