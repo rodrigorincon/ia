@@ -40,6 +40,8 @@ O número de neurônios na camada de saída depende da função de ativação e 
 
 **Para regressão o número de neurônios é 1 para cada número que deseja prever** (se você que descobrir a temperatura e a umidade, são 2 saídas). Importante entender que não é um neurônio para cada peso a ser descoberto, mas sim **um neurônio para cada Y que quer prever**.
 
+Nas camadas ocultas o número de neurônios varia e costuma ser descoberto via tentativa e erro. Sempre são usados o expoente 2 (8, 16, 32, 64...), pois assim cada teste estará em uma ordem de magnitude diferente.
+
 ### Ligação Entre Neurônios
 
 Outra característica crucial da arquitetura desse tipo de rede neural é que **todos os neurônios da camada anterior se conectam com todos da camada seguinte**. Outros tipos de rede neural podem não ter essa ligação densa, portanto esse é mais um ponto de diferenciação entre os modelos.

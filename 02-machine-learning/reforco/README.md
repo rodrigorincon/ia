@@ -179,6 +179,10 @@ A estrutura que armazena a memória é:
 - Baseados em Política: parâmetros internos da política $\theta$ (pesos da rede neural)
 - Baseados em Modelo: Modelo do Ambiente
 
+### Rede Neural
+
+A maioria (não todos, mas a grande maioria) dos algoritmos de aprendizado por reforço usam redes neurais. A arquitetura da rede depende da finalidade (MLP, CNN...), asim como a quantidade de camadas ocultas e de neurônios em cada camada. Cada algoritmo tem seus tipos de rede neural favoritos, explicados em cada um. O número de neurônios costumam seguir o expoente 2 (8, 16, 32, 64...) e o número de camadas aí realmente depende totalmente do contexto.
+
 ## Frequência das Recompenas
 
 A depender do que está fazendo as recomepensas podem vir logo após a ação (Ação -> Recompensa -> Ação), podem vir durante a execução mas muito depois (com atraso) ou podem vir só ao final da execução (quando encerra o modelo). As vezes você até pode escolher entre as três opções, modelando de forma diferente a IA conforme julgar melhor.
@@ -201,6 +205,8 @@ Esse é um dos maiores desafios do RL (junto com decidir entre explorar e exploi
 1. **Fator de Desconto ($\gamma$)**
 
 Propaga a recompensa do futuro de volta para o passado, ponderando que ações mais antigas têm uma fatia de responsabilidade no resultado final. Ele atribiu culpa parcial a cada ação. O desafio é saber quanto de culpa dar a cada passo.
+
+Em outras palavras ele diz o quanto a IA prefere recompensas imediatas a recompensas a longo prazo. $\gamma$ o modelo é imediatistas e só dar valor para recompensa imediata. $\gamma$ alto garante que o modelo pensa no longo prazo.
 
 2. **Função de Valor (Q ou V)**
 
