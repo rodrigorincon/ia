@@ -25,5 +25,8 @@ python assistir.py   # só mostra a IA jogando com o último modelo salvo
 
 ## O que esperar
 
-- O treino roda na CPU e leva horas: em teste, 4 ambientes rodaram ~110 passos/s. Os 2 milhões de passos padrão levam algumas horas.
+- O treino em um computador caseiro rodando na CPU leva horas: localmente, 12 ambientes em paralelo rodaram os 2 milhões de passos em 4 horas.
 - A IA treina **só na fase 1-1**. A fase 1-2 (subterrânea) é visualmente diferente e ela nunca a viu, então é normal ir mal nela: serve para ver o quanto o aprendizado generaliza.
+- Não existe um número fixo de partidas jogadas pela IA, mas sim de passos dados. Assim ela pode jogar mais ou menos partidas a depender se morrer rápido ou não. Mas o número mínimo é de 833 partidas.
+- O episódio acaba se o Mario morrer, se o tempo acabar ou se ele concluir a fase. Tudo isso é controlado pela biblioteca `gym_super_mario_bros` que faz tudo internamente.
+- O número médio de passos por episódio é informado em `ep_len_mean`.

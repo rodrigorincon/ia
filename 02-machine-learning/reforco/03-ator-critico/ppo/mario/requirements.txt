@@ -1,0 +1,4 @@
+gym-super-mario-bros>=9.1.0  # já instala o nes-py (emulador de NES) e o gymnasium
+stable-baselines3>=2.9.0
+torch
+opencv-python  # janela da demonstração visual
