@@ -24,11 +24,14 @@ A IA é conhecida por ter tido várias ondas de desenvolvimento. Abaixo listo co
 - **1987–1993**: 2º inverno da IA
 - **1990–2010**: IA estatística / Machine Learning
   - Uso de estatística e grande massa de dados para criar modelos dinâmicos
+  - Ressurgimento das redes neurais, porém apenas como mais uma entre várias formas de fazer IA
 - **2010–2017**: Deep Learning
   - Redes neurais com várias camadas e diversas arquiteturas
+  - Redes neurais tomam a frente do desenvolvimento de IA e tem primeiro boom
 - **2017–2022**: Transformers
   - Criação da arquitetura de rede neural que mudaria a IA
 - **2022–atual**: IA generativa e agentes
+  - IA se torna popular e alcança nível de criação semelhante ao humano
 
 ## Era 1: IA simbólica (1940–1956)
 
@@ -87,7 +90,7 @@ As técnicas mais importantes nessa era foram:
   - Funciona quando se conhece por completo o ambiente (como no xadrex)
   - É extremamente custoso. $O(n^m)$
   - Usa a técnica *Poda alfa-beta* para descarta ramos inúteis, tornando-o mais rápido
-  - Usado pelo **Deep Blue para ganhar do Kasparov no xadrez**
+  - Usado pelo **Deep Blue para ganhar do Kasparov no xadrez no futuro**
 - Lógica de predicados (sistema formal)
   - Modela todo o sistema através de frases. Cada situação vira uma frase
     - Ex: o robô está com a pá emperrada
@@ -119,7 +122,7 @@ Mas não foi uma década sem nada acontecendo. Em 1975 graças ao trabalho de Jo
 
 Os sistemas especialistas usavam regras bem definidas por especialistas da área. Os programadores se uniam com especialsitas de uma área para modelar algum problema muito específico e fazer um programa que só resolvia 1 única coisa. Eles usavam as técnicas e algoritmos da IA simbólica, mapeando um contexto muito reduzido com ajuda de especialistas da área.
 
-Um feito digno de nota dessa época foi a criação do algoritmo *backpropagation* em 1980 que viria a revolucionar as redes neurais no futuro.
+Um feito digno de nota dessa época foi a criação do algoritmo *backpropagation* na década de 1980 que viria a revolucionar as redes neurais no futuro.
 
 ### Segundo inverno da IA (1987–1993)
 
@@ -131,9 +134,9 @@ A mudança mais importante foi abandonar a ideia de que todas as regras deveriam
 
 Porém isso exige uma massa de dados gigantesca para ser feito e toda uma nova área de conhecimento foi criada para encontrar, tratar e disponibilizar esses dados e também para como trabalhar com eles. Métodos de uso desses dados no treinamento e na avaliação do mesmo antes de botar em produção surgiram conforme foi-se evoluindo essa área.
 
-Importante dizer que apesar da ascensão do machine learning a IA clássica ainda encontrava espaço e havia uma certa disposta entre as duas para se provar qual abordagem era melhor. Um feito digno de nota foi a vitória do Deep Blue sobre Kasparov no xadrez em 1997, usando IA clássica.
+Importante dizer que apesar da ascensão do machine learning a IA clássica ainda encontrava espaço e havia uma certa disputa entre as duas para se provar qual abordagem era melhor. Um feito digno de nota foi a vitória do Deep Blue sobre Kasparov no xadrez em 1997, usando IA clássica.
 
-As redes neurais aqui ainda eram com 1 ou 2 camadas (a inicial e final) e consideradas uma vertente pouco produtiva devido seu alto gasto computacional e necessidade de altos dados. **Perceptrons multicamadas** eram o que se fazia com redes neurais na época. O machine learning usava muito outros algoritmos como regressões, máquinas de vetores de suporte e etc, mas as redes neurais estava lá como mais um concorrente.
+As redes neurais aqui ainda eram com 1 ou 2 camadas (a inicial e final) e consideradas uma vertente pouco produtiva devido seu alto gasto computacional e necessidade de altos dados. Já se havia as arquiteturas MLP (perceptron multicamada), CNN (redes convolucionais - para imagens) e RNN (redes recorrentes - para dados temporais e texto), mas ainda não tinham se provado melhor que as demais. O machine learning usava muito outros algoritmos como regressões, máquinas de vetores de suporte e etc. As redes neurais estava lá como mais um concorrente.
 
 ### Paradigma
 
@@ -189,13 +192,13 @@ Cada grupo tem seus próprios algoritmos e fluxos de funcionamento. Suas diferen
 - Perceptrons multicamadas
 - clustering
 
-## Era 3.5: Deep Learning (2010–2017)
+## Era 4: Deep Learning (2010–2017)
 
-Aqui as redes neurais despontaram como a favorita e mais promissora forma de IA. Isso aconteceu graças ao deep learning. Deep Learning é uma subárea de Machine Learning baseada principalmente em **redes neurais com múltiplas camadas**. 
+Aqui as redes neurais despontaram como a favorita e mais promissora forma de IA. Isso aconteceu graças ao deep learning. Isso ocorre após a AlexNet, uma rede neural profunda usando arquiteura CNN (redes neurais convolucionais) vencer o campeonato ImageNet com larga vantagem. 
 
-As redes neurais tinham 1 ou 2 camadas e sofriam para ter mais que isso devido ao crescimento exponencial de processamento para processar e convergir todos os pesos quando tinha mais que isso. Com o uso de GPUs maios poderosas e melhoria dos algoritmos isso se tornou possível. O objetivo agora é descobrir quantas camadas uma rede neural deveria ter para dar os resultados mais precisos e como descobrir isso com o menor processamento. Algoritmos genéticos também foram usados junto com as redes neurais para complementar o aprendizado.
+Deep Learning é uma subárea de Machine Learning baseada principalmente em **redes neurais com múltiplas camadas**. As redes neurais tinham 1 ou 2 camadas e sofriam para ter mais que isso devido ao crescimento exponencial de processamento para processar e convergir todos os pesos quando tinha mais que isso. Com o uso de GPUs maios poderosas e melhoria dos algoritmos isso se tornou possível. O objetivo agora é descobrir quantas camadas uma rede neural deveria ter para dar os resultados mais precisos e como descobrir isso com o menor processamento. Algoritmos genéticos também foram usados junto com as redes neurais para complementar o aprendizado.
 
-Em 2016 o AlphaGo, IA da DeepMind, vence o campeão mundial de Go, marcando outro grande marco na história da IA. Ele usava deep learning e busca em árvore de Monte Carlo. A busca da árvore era aprimorada com aprendizado por reforço.
+Em 2016 o AlphaGo, IA da DeepMind, vence o campeão mundial de Go, marcando outro grande marco na história da IA. Ele usava deep learning em aprendizado supervisionado com busca em árvore de Monte Carlo (MCTS).
 
 ### Funcionamento de uma rede neural
 
@@ -253,7 +256,7 @@ Os pesos começam com valores aleatórios e a cada rodada são ajustados pelo ba
 
 No Machine Learning tradicional, frequentemente o programador precisava definir quais características deveriam ser processadas pela rede neural. No Deep Learning a rede consegue aprender representações progressivamente mais complexas. Cada camada desvenda uma característica específica dos dados, encontrando padrões mais complexos e desvendando mais informações. Com essa habilidade do deep learning foi possível dar um salto que tornou a IA popular no mundo todo e ser assunto dos papos de bar.
 
-Isso também tirou ainda mais da mão do programador a necessidade de conhecer amplamente o contexto, pois a rede neural desvendava sozinha o que precisava desvendar. Isso levou o aprendizado não supervisionado para outro nível e gerou discussões sobre ninguém mais saber para onde a IA estava indo ou o que ela poderia descobrir ou decidir fazer no futuro.
+Isso também tirou ainda mais da mão do programador a necessidade de conhecer amplamente o contexto, pois a rede neural descobria sozinha o que precisava desvendar. Isso levou o aprendizado não supervisionado para outro nível e gerou discussões sobre ninguém mais saber para onde a IA estava indo ou o que ela poderia descobrir ou decidir fazer no futuro.
 
 ```text
 Imagem --> Bordas --> Formas --> Partes de objetos --> Objetos --> Classe
@@ -261,13 +264,13 @@ Imagem --> Bordas --> Formas --> Partes de objetos --> Objetos --> Classe
 
 ---
 
-## Era 3.7: Transformers (2017-2022)
+## Era 4.5: Transformers (2017-2022)
 
 Um transformer é uma arquitetura de rede neural profunda (deep learning) criada em 2017 pelo Google no trabalho *Attention Is All You Need*. Essa arquitetura mudou profundamente o processamento de linguagem natural e posteriormente tornou-se a base de muitos modelos generativos modernos. Ela chama cada unidade de processamento de token e avalia o quanto os tokens se auto referenciam. Antes a rede neural só ligava a palavra com as palavras próximas. Com o conceito de auto referência (atenção) uma palavra poderia estar ligada a outra longe no texto, expandindo a capacidade de entender e criar textos complexos.
 
 Cada token preferenta uma palavra e, dependendo do contexto, pedaços de uma palavra. Representar pedaços de palavra como token permitia à IA entender tempo verbal, formas nominais, singlular e pluras e outras sutilezas da linguagem.
 
-## Era 4: IA generativa — a partir de 2022
+## Era 5: IA generativa — a partir de 2022
 
 Com o aumento do tamanho dos modelos, da quantidade de dados e do poder computacional, tornou-se possível treinar modelos generalistas em grande escala. Esses modelos são frequentemente chamados de **foundation models** (modelos fundacionais). Com esses grandes modelos gerais o teste de Turing foi quebrado e foi-se cogitado se uma AGI (IA de uso geral, que entenda e sirva para qualquer assunto) tenha sido criada. Como um modelo fundacional pode ser usado para diversos fins ao generalizar a ação usando contextos discute-se muito se eles são uma IA de uso geral ou ainda são restritos. As LLM e o ChatGPT foi o primeiro modelo fundacional a ganhar fama.
 

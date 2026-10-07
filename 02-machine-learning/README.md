@@ -7,10 +7,10 @@ Muito dos modelos de machine learning usam redes neurais, mas ela não é tudo. 
 ## Cronologia resumida
 
 - 1957: Perceptron (Frank Rosenblatt).
-- 1986: Redescoberta de redes neurais com backpropagation.
+- 1986: Retorno das redes neurais com a criação do backpropagation.
 - 1995: Popularização de métodos de kernel e SVM (Máquina de Vetores de Suporte).
 - 2006: Reavivamento do interesse por redes profundas.
-- 2012: Avanço de deep learning em visão computacional (AlexNet).
+- 2012: Avanço de deep learning em visão computacional (AlexNet). Deep Learning fica nos holofotes.
 
 ## Como funciona (visão superficial)
 
