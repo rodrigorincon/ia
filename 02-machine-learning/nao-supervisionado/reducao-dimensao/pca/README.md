@@ -194,7 +194,7 @@ A equação de transformação para $PC_1$ é $PC_1 = Z[0] * W[0] = 0.707 \cdot 
 
 ## QUANDO NÃO USAR
 
-- **Relações Não-Lineares Complexas:** Se os dados formarem estruturas curvas ou variedades não-lineares (ex: padrão em caracol ou superfície em "S"), o PCA falhará em capturar a estrutura (prefira **Kernel PCA**, **t-SNE** ou **UMAP**).
+- **Relações Não-Lineares Complexas:** Se os dados formarem estruturas curvas ou variedades não-lineares (ex: padrão em caracol ou superfície em "S"), o PCA falhará em capturar a estrutura (prefira **Kernel PCA**, **t-SNE** ou **UMAP** ou mesmo **redes neurais autoencoder**).
 - **Exigência de Interpretabilidade:** Se o negócio precisa saber exatamente "qual o efeito do atributo Idade", o PCA impede essa leitura direta.
 - **Dados Predominantemente Categóricos Nominais:** A variância e covariância não fazem sentido para dados categóricos (prefira **Análise de Correspondência Múltipla - MCA**).
 
