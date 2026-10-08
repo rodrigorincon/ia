@@ -21,6 +21,8 @@ Contudo, empilhar simplesmente várias camadas de MLP gera problemas graves, com
   - **Primeiro boom do machine learning**.
 - 2014: Surgimento das GANs (Generative Adversarial Networks).
   - Revoluciona a criação de imagens e dados através da disputa desenhada por teoria dos jogos.
+- 2015: Surgimento da ResNet (Residual Networks). 
+  - Permite treinar redes com centenas ou milhares de camadas sem o gradiente ir a zero.
 - **2017**: Surgimento dos Transformers.
   - Criado dentro do Google no artigo "Attention Is All You Need".
   - Elimina a necessidade de recorrência e convolução para processamento de linguagem e sequências.
@@ -120,4 +122,46 @@ Uma CNN usa sigmoide na saída quando faz classificação binária (é algo, est
 #### Pontos Negativos:
 - Dificuldade para capturar relações de longo alcance sem aumentar muito a profundidade ou o tamanho dos filtros.
 - **Sensível a rotações e transformações espaciais** para as quais não foi treinada (exige ampliação de dados).
+
+### Redes Neurais Recorrentes e LSTM/GRU (RNN)
+
+As RNNs trabalham com **dados em sequência**, ou seja, a **ordem dos dados importa**. Esses dados podem ser **temporais ou texto**, aonde as palavras que vieram antes influenciam o que vem depois. Como precisam saber a ordem dos dados eles precisam guardar a informação processada anterior, o que gera ciclos nas ligações dos neurônios. A saída de cada neurônio volta para si mesmo como entrada junto com o próximo dado. Isso significa que ao processar o dado 1 (primeira palavra do texto ou evento mais antigo da lista) todos os K*N resultados de todos os neurônios são guardados em uma memória e quando o dado 2 (segunda palavra ou segundo evento mais antigo) entrar na rede cada neurônios receberá seu respectivo último valor como mais uma das entradas. Esse loop de receber a saída como entrada no próximo loop cria o conceito de **memória interna**. 
+
+Importante: **todos os neurônios da rede recebem um valor do passado** e recebem especificamente **a saída deles mesmos**. Um neurônio nunca recebe como entrada a saída de outro neurônio!
+
+![](images/rnn1.png)
+
+A rede recebe **apenas a saída da última rodada**, ou seja, não há entradas com a saída de 2 ou 3 rodadas atrás. Porém indiretamente todas as saídas anteriores estão compactadas nessa única entrada. Como esse valor foi calculado considerando todas as etapas anteriores, todas elas tem um pouco de peso no valor atual. O valor inicial dessa entrada na primeira rodada geralmente é 0, assim não afeta o primeiro loop. Essa entrada vindo do estado passado também tem um peso que é calculado pelo backpropagation. Ou seja, o backpropagation também mede o qual importante é os estados anteriores (e o quanto cada estado é) para o estado atual.
+
+Os exemplos clássicos de dados desse tipo de arquitetura é texto, áudio, vídeo e séries temporais. Com texto podemos identificar a classe gramatical de cada palavra ou análise de sentimento.
+
+O maior problema das RNNs é o desaparecimento de gradiente (vanish gradient). Isso acontece quando o peso se aproxima de 0, fazendo a rede deixar de considerar para sempre aquela entrada. Deixar de lembrar/considerar dados antigos deixa a rede como se tivesse aminésia igual a Dory, lembrando só do pasado próximo. Para resolver esse problema 2 variações dela foram criadas: LSTM e GRU..
+
+A LSTM (Long ShorT-Term Memory) possui um buffer de memória chamada "estrada" ou Cell State ($C_t$)  e 3 portões por onde os dados de memória passam (esquecimento, entrada e saída). Os portões controlam explicitamente o que manter, adicionar ou descartar no buffer. O GRU (Gated Recurrent Unit) simplifica essa mecânica combinando o estado oculto e a célula em um único vetor gerido por apenas dois portões (atualização e reinicialização), oferecendo menor custo computacional e maior velocidade de treinamento.
+
+Ela foi quase inteiramente abandonada com a chegada dos transformers, que faz tudo que ela faz muito melhor. Para processar texto, áudio e vídeo é muito melhor usar transformers ou CNNs com entrada adaptadas para áudio e vídeio. O único cenário onde ele continua sendo usado é em IOT e embarcados, pois consomem muito menos processamento. **Sensores e robótica seguem usando GRUs** para economia do processador. Celulares ainda usam GRU unicamente para detecção da palavra-chave que inicia a IA do sistema. **Apenas detectam se foi falado "hey Siri" e "OK Google"** e acordam o transformer para processar o resto da conversa. Também segue sendo usado aonde o **fluxo de novos dados nunca para** (como sensores de telemetria que atualizam a cada milissegundo ou mercado financeiro de altíssima frequência - bots que trabalham com atualizações de segundos). Isso por causa da sua velocidade para atualizar o estado, faz em O(N) e acessam em O(1).
+
+> Curiosidade: em 2016 uma RNN escreveu o roteiro de um curta metragem chamado Sunspring. As frases não tinha nexo nenhum umas com as outras. Como uma tentativa de escrever um roteiro foi um fracasso total, mas achei um caso curioso. Foi filmado com atores de Hollywood e pode ser encontrado facilmente.
+
+#### Informações Arquiteturais
+
+- **Conexão dos neurônios:**
+  - Esparsa (neurônio se liga a N-1 da próxima camada)
+- **Função de Ativação:**
+  - Camada Oculta: ReLU
+  - Camada Saída: Softmax ou Sigmoide (para classificação) e Linear (para regressão)
+
+#### Quando usar:
+- IOT e robótica
+- Detecção de palavra-chave para inicar algo
+- Fluxo de dados constante e de alta frequência (dados novos a cada segundo ou menos)
+
+#### Pontos Positivos:
+- Capacidade nativa de lidar com entradas e saídas de tamanho variável.
+- Modela nativamente a relação temporal/ordenada entre os dados.
+
+#### Pontos Negativos:
+- **Não podem ser facilmente paralelizadas** no treinamento.
+- LSTMs e GRUs são lentas para treinar em sequências muito longas.
+- Ainda propensas ao esquecimento de informações muito distantes no tempo se a sequência for muito extensa.
 
