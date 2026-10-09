@@ -9,7 +9,7 @@ aprovado = [0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0,
 ###### FUNÇÕES PARA O MODELO DE REGRESSAO LOGISTICA
 
 def sigmoid(z):
-    return 1 / ( 1 + np.exp(-z))
+    return 1 / (1 + np.exp(-z))
 
 def maxima_verossimilhanca(w, X, y):
     n = len(X)
@@ -18,84 +18,106 @@ def maxima_verossimilhanca(w, X, y):
     # Evita log(0) adicionando uma pequena constante de estabilidade (eps)
     eps = 1e-15
     sigmoid_res = np.clip(sigmoid_res, eps, 1 - eps)
-
+    
     logit = np.log(sigmoid_res)
     parte1 = np.multiply(-y, logit) # -y * log(ŷ)
     parte2 = np.multiply(1 - y, np.log(1 - sigmoid_res)) # (1 - y) * log(1 - ŷ)
 
-    somatorio = np.sum(parte1 - parte2) # somatorio
-    return somatorio/n
+    somatorio = np.sum(parte1 - parte2)
+    return somatorio / n
 
-def gradiente_descendente(w, X, y, tx_aprendizado, num_epocas):
+# beta1: taxa de decaimento para o 1º momento (média móvel dos gradientes)
+# beta2: taxa de decaimento para o 2º momento (média móvel dos gradientes ao quadrado)
+def gradiente_descendente_adam(w, X, y, tx_aprendizado=0.01, num_epocas=1000, beta1=0.9, beta2=0.999):
+    epsilon = 1e-8 # evita divisão por zero
+
     # array para armazenar o resultado do custo em cada época para visualizarmos depois ele descendo o gradiente
     custo_por_epoca = np.zeros(num_epocas)
 
-    for i in range(num_epocas):
-        # atualização dos pesos usando a fórmula do gradiente descendente para regressão logística
-        sigmoid_res = sigmoid(X @ w.T) # X @ w.T é o produto matricial entre X e W transposta (pesos)
-        derivada_custo = np.sum( (sigmoid_res - y) * X, axis=0)
-        
-        w = w - tx_aprendizado/len(X) * derivada_custo
-        custo_por_epoca[i] = maxima_verossimilhanca(w, X, y)
+    # Inicialização dos momentos m (1º momento) e v (2º momento) com zeros
+    m = np.zeros_like(w)
+    v = np.zeros_like(w)
+
+    for step in range(1, num_epocas + 1):
+        # Cálculo da derivada da função de custo (até aqui tudo igual ao normal)
+        sigmoid_res = sigmoid(X @ w.T)
+        derivada_custo = np.sum((sigmoid_res - y) * X, axis=0)
+
+        # Atualização dos momentos (m e v) - AQUI COMEÇA AS MUDANÇAS
+        m = beta1 * m + (1 - beta1) * derivada_custo
+        v = beta2 * v + (1 - beta2) * (derivada_custo ** 2)
+
+        # Correção de viés (Bias Correction). Ao passar das rodadas vai dividindo por valores maiores (tendendo a 1)
+        m_chapeu = m / (1 - beta1 ** step)
+        v_chapeu = v / (1 - beta2 ** step)
+
+        # Atualização dos pesos com a regra do Adam (troca a derivada pelo m_chapeu e a divisão pela quantidade de dados por v_chapeu)
+        w = w - (tx_aprendizado / (np.sqrt(v_chapeu) + epsilon)) * m_chapeu
+
+        # 5. Cálculo do custo da época
+        custo_por_epoca[step - 1] = maxima_verossimilhanca(w, X, y)
     
     return w[0], custo_por_epoca
 
 ###### PREPARA OS DADOS
 
-# set X (training data) and y (target variable)
 X = [prova1, prova2]
-y = [aprovado] # precisa colocar entre colchetes pra formar uma matriz 100,1. Se ficar como array vai dar problema na hora de multiplicar as matrizes
+y = [aprovado]
 num_vars_independentes = len(X)
-media = np.mean(X)
-desvio = np.std(X)
 
-# troca linhas pelas colunas para ter cada linha representando um aluno e cada coluna representando uma prova
 X = np.array(X).T 
 y = np.array(y).T
 
-# Padronização dos dados. Usa a transformação Padrão z = (x - u) / s
+# Padronização dos dados (z-score)
 scaler = StandardScaler()
-scaler.fit(X)
-X = scaler.transform(X)
+X = scaler.fit_transform(X)
 
-# adiciona a coluna de 1s para o intercepto
-X = np.array([ np.insert(x, 0, 1) for x in X ]) # para cada linha de X, insere um 1 no início da linha
+# Guarda média e desvio padrão para uso no predict
+media = scaler.mean_
+desvio = scaler.scale_
 
-###### COMEÇA A REGRESSAO DE FATO 
+# Adiciona a coluna de 1s para o intercepto (bias)
+X = np.hstack([np.ones((X.shape[0], 1)), X])
 
-# inicia os pesos com valores aleatorios
-w = np.random.rand(1, num_vars_independentes+1) # params formam uma matriz de 1 linha e 3 valores (2 para as provas e 1 para o intercepto)
+###### COMEÇA A REGRESSAO COM ADAM
 
-# executa todo o fluxo da regressão logistica
-tx_aprendizado = 0.01
-total_iteracoes = 10_000
-pesos, lista_custos = gradiente_descendente(w, X, y, tx_aprendizado, total_iteracoes)
+# Inicia os pesos com valores aleatórios
+w = np.random.rand(1, num_vars_independentes + 1)
 
-# plotando os valores da funcao de custo para cada loop
+# Parâmetros de treino
+tx_aprendizado = 0.1  # Com Adam, podemos usar uma taxa maior que o SGD padrão
+total_iteracoes = 1000
+
+# Executa o treino com Adam
+pesos, lista_custos = gradiente_descendente_adam(w, X, y, tx_aprendizado, total_iteracoes, beta1=0.9, beta2=0.999)
+
+# Plotando a curva de custo
 fig, ax = plt.subplots()  
-ax.plot(np.arange(total_iteracoes), lista_custos, 'r')  
+ax.plot(np.arange(total_iteracoes), lista_custos, 'b-', label='Adam')  
 ax.set_xlabel('Iterações')  
 ax.set_ylabel('Custo')  
-ax.set_title('Erro vs. Iteracaoes')
+ax.set_title('Erro vs. Iteracaoes - Adam')
 plt.show()
 
 print('\n\npesos: ', pesos,'\n\n')
 
 ###### FAZ PREDIÇÕES PARA NOVOS VALORES
 threshold = 0.5
-def predict(pesos, X, media, desvio):
-    X = (X - media)/desvio # padroniza os valores das provas segundo z-score (igual foi feito para os dados de treino)
-    X = np.insert(X, 0, 1) # adiciona a coluna de 1s para o intercepto
 
-    return sigmoid(X @ pesos.T)
+def predict(pesos, X_novo, media, desvio):
+    # Padronização usando os parâmetros salvos do conjunto de treino
+    X_padronizado = (X_novo - media) / desvio
+    # Adiciona bias
+    X_padronizado = np.insert(X_padronizado, 0, 1, axis=1)
+    return sigmoid(X_padronizado @ pesos.T)
 
-# teste 1
-estudante1 = np.array([[45,85]])
+# Teste 1
+estudante1 = np.array([[45, 85]])
 resposta = predict(pesos, estudante1, media, desvio)
 print('Probabilidade de aprovação do estudante 1: ', resposta)
 print('O estudante 1 foi aprovado? ', resposta >= threshold)
 
-# teste 2
+# Teste 2
 estudante2 = np.array([[90, 90]])
 resposta = predict(pesos, estudante2, media, desvio)
 print('Probabilidade de aprovação do estudante 2: ', resposta)

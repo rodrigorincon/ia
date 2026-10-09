@@ -88,7 +88,11 @@ Para não ficar preso numa região aonde todos os valores vizinhos são iguais a
   - Adam: altera a taxa de aprendizado de acordo com o gradiente, tornando-o menor ou maior conforme a tangente muda
 - O Adam é preferível, sendo mais rápido para convergir
 
-O Adam usa a 1ª derivada para saber a direção em que deve empurrar o modelo e a segunda para saber a aceleração (o quão rápido a tangente está mudando), assim ajustar o valor da taxa de aprendizado para o melhor valor de acordo com a inclinação da região.
+O Adam usa a 1ª derivada para saber a direção em que deve empurrar o modelo e a segunda para saber a aceleração (o quão rápido a tangente está mudando), assim ajustar o valor da taxa de aprendizado para o melhor valor de acordo com a inclinação da região. 
+
+A imagem abaixo mostra a diferença entre o gradiente descendente com e sem Adam. Mesmo código e mesmos dados, mudando apenas o Adam.
+
+![](../../images/adam.png)
 
 2. Redução da taxa de aprendizado
 
