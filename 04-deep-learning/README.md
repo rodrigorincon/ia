@@ -46,6 +46,59 @@ As redes neurais foram criadas para classificação e reinam nisso, porém tamb�
 
 Como as camadas internas apenas torcem e distorcem os dados e seus espaços, a camada de saída tem o dever de formatar esse dado para a finalidade que queremos. Isso tudo (torções e formatações) são feitas pelas funções de ativação de cada camada. Para retornar os dados de uma regressão é usado na camada de saída a função Linear, que não faz nada no dado. Ou seja, apenas retorna o número calculado pela rede. Já que a rede é a própria regressão, não precisa de transformação na saída.
 
+## HIPER-PARÂMETROS COMUNS
+
+Cada arquitetura tem hiper-parâmetros próprios, porém além deles há alguns que são comuns a todos:
+
+- Taxa de aprendizado
+- Tamanho do lote (batch size)
+- Otimizador 
+- Número de épocas
+- Regularização (L1, L2, Elastic Net ou nenhuma)
+
+## PROBLEMA DO DESAPARECIMENTO DO GRADIENTE
+
+No backpropagation fazemos a regra da cadeia da derivada, isso significa que temos de fazer diversas multiplicações seguidas. Se a maioria desse valores forem abaixo de 1 então a tendência é a cada multiplicação o valor final diminuir. Após alguns loops esse excesso de multiplicações faz a derivada daquele peso ficar muito próximo de zero, o que causa a parada de mudança do peso (peso novo = peso antigo + derivada. Com derivada = 0 os pesos não mudam mais). Ou seja, **a rede para de aprender aquele trecho**. 
+
+Isso acontece com mais força nos pesos das primeiras camadas, pois para calculá-los precisa passar pela multiplicação de todos os outros. **Os pesos das primeiras camadas tendem a não atualizar quando a maioria dos pesos são menores que 1**.
+
+### Derivada Parcial e a Jacobiana
+
+Relembrando: regra da cadeia é:
+
+$$\frac{\delta f}{\delta x} = f'(g(x)) * g'(x)$$
+
+A culpa desse fenômeno é a derivada parcial. Ao fazer a regra da cadeia adicionamos várias multiplicações na conta. Para cada camada, mais equações dentro de equações e no final mais multiplicação na hora de derivar.
+
+Imaginando uma rede com 1 camada oculta apenas e 2 neurônios em cada como a debaixo:
+
+![](images/exemplo-rede1.png)
+
+A equação da saída do neurônio $A_1^1$ por exemplo é $a^1_1 = f(x_1*w_1 + x_2*w_2 + b_1)$ (sendo f(x) a função de ativação). A saída final da rede é $f(w_5*a^1_1 + w_6 * a^1_2 + b_2)$. Substituindo fica.
+
+$a_2 = f(w_5*f(x_1*w_1 + x_2*w_2 + b_1) + w_6 * f(x_1*w_3 + x_2*w_4 + b_1) + b_2)$
+
+Como o peso $w_5$ tá mais pra fora da equação a regra da cadeia fica com menos multiplicações. Já o $w_1$ que tá bem para dentro terá mais multiplicações. A título de exemplo, supondo que a função de ativação é RELU (derivada igual a 1) o backprpagation de $w_5$ e $w_1$ são:
+
+$\frac{\delta f}{\delta w_5} = 1 * f(x_1*w_1 + x_2*w_2 + b_1)$
+
+$\frac{\delta f}{\delta w_1} = 1 * w_5*f(x_1*w_1 + x_2*w_2 + b_1) + x_1$
+
+Se a função de ativação for a sigmoide piora ainda mais, pois a derivada da sigmoide adiciona 2 multiplicações a mais a cada elemento da cadeia.
+
+A matriz formada por todas as derivadas parciais de uma camada é chamada de matriz Jacobiana. Podemos resumir todos esses cálculos numa multiplicação de matrizes $\prod_i^n J_i$ aonde J é a matriz jacobiana e n é o número de camadas. Por isso muitas bibliografias culpam a matriz Jacobiana por esse fenômeno. Porém ela é só outra forma de falar das derivadas parciais.
+
+### Importância do Cuidado com Saturação
+
+Como comentado na explicação do MLP, a função de ativação deve ter o ponto de saturação nos extremos, buscando deixar o mais difícil dos pesos caírem na zona de saturação. A zona de saturação é quando a derivada da função é 0 e os pesos deixam de ser atualizados. Escolher uma função com saturação mais difícil e inicializar os pesos longe da região que a derivada caia na zona de saturação são importantes para evitar o vanish gradient.
+
+### Como Resolver
+
+- **Inicialização dos pesos adequada**: Técnicas como Xavier/Glorot e He ajudam a rede a começar longe da zona de saturação da derivada.
+- **ReLU**: A derivada é sempre 1 para todo valor positivo. Isso evita cair na zona de saturação.
+- **Conexões Residuais (ResNet):** Ao somar a entrada junto da saída impede que o gradiente zere. É o equivalente a somar a matriz identidade com a Jacobiana (J + I).
+- **Arquiteturas de Portas:** A arquitetura de portas do LSTM e GRU ajudam a aumentar o valor da derivada por somar ao final o peso da rodada anterior.
+
 ## PRINCIPAIS ARQUITETURAS DE REDES NEURAIS
 
 As principais arquiteturas são:
@@ -83,6 +136,13 @@ As principais arquiteturas são:
 - **Poucos atributos X:** Melhor usar XGBoost ou Random Forest.
 - **Quando a interpretabilidade é obrigatória.** Os pesos da camada oculta não têm um significado direto. Árvores de decisão ou regressão logística explicam melhor.
 - **Imagens, texto, sequências.** Um MLP simples ignora a estrutura dos dados. Arquiteturas especializadas (CNN, RNN, Transformers) são mais indicadas.
+
+### Hiper-parâmetros
+
+- Número de camadas ocultas
+- Número de neurônios por camada
+- Funções de ativação
+- Taxa de Dropout
 
 ## Redes Neurais Convolucionais (CNN)
 
@@ -133,6 +193,16 @@ Uma CNN usa sigmoide na saída quando faz classificação binária (é algo, est
 - Dificuldade para capturar relações de longo alcance sem aumentar muito a profundidade ou o tamanho dos filtros.
 - **Sensível a rotações e transformações espaciais** para as quais não foi treinada (exige ampliação de dados).
 
+### Hiper-parâmetros
+
+- Número de filtros ((feature maps))
+- Tamanho do filtro (3x3, 5,5...)
+- Passo (Stride): deslocamento do filtro sobre a imagem
+- Preenchimento (Padding): como será o tratamento das bordas
+- Tipo  de Pooling: Max Pooling, Average Pooling
+- Tamanho da janela
+- Funções de ativação
+
 ## Redes Neurais Recorrentes e LSTM/GRU (RNN)
 
 As RNNs trabalham com **dados em sequência**, ou seja, a **ordem dos dados importa**. Esses dados podem ser **temporais ou texto**, aonde as palavras que vieram antes influenciam o que vem depois. Como precisam saber a ordem dos dados eles precisam guardar a informação processada anterior, o que gera ciclos nas ligações dos neurônios. A saída de cada neurônio volta para si mesmo como entrada junto com o próximo dado. Isso significa que ao processar o dado 1 (primeira palavra do texto ou evento mais antigo da lista) todos os K*N resultados de todos os neurônios são guardados em uma memória e quando o dado 2 (segunda palavra ou segundo evento mais antigo) entrar na rede cada neurônios receberá seu respectivo último valor como mais uma das entradas. Esse loop de receber a saída como entrada no próximo loop cria o conceito de **memória interna**. 
@@ -174,6 +244,12 @@ Ela foi quase inteiramente abandonada com a chegada dos transformers, que faz tu
 - **Não podem ser facilmente paralelizadas** no treinamento.
 - LSTMs e GRUs são lentas para treinar em sequências muito longas.
 - Ainda propensas ao esquecimento de informações muito distantes no tempo se a sequência for muito extensa.
+
+### Hiper-parâmetros
+
+- Direcionalidade: Unidirecional ou Bidirecional
+- Dropout recorrente
+- Comprimento máximo da sequência
 
 ## Redes Neurais Residuais (ResNet)
 
@@ -221,6 +297,14 @@ Embora sua arquitetura possa ser fundida a qualquer outra apresentada aqui, ela 
 
 ### Pontos Negativos:
 - Aumento no uso de memória.
+
+### Hiper-parâmetros
+
+- Profundidade total (ex.: ResNet-18, ResNet-50, ResNet-101).
+- Tipo de bloco: Bloco Básico vs. Bloco Bottleneck 
+- Fator de expansão do Bottleneck (Expansion Factor)
+- Uso de Batch Normalization: Posição (antes ou depois da ativação)
+- Tipo de projeção no caminho de atalho (shortcut connection) quando as dimensões variam (ex.: convolução 1x1 com stride vs. padding de zeros)
 
 ## Redes Neurais Adversárias Generativas (GAN)
 
@@ -356,6 +440,122 @@ O autoencoder e o VAE falham ao reconstruir um dado anômalo (decoder o refaz ma
 ### Pontos Negativos:
 - Imagens geradas por VAEs tradicionais tendem a ser mais embaçadas comparadas às geradas por GANs ou Modelos de Difusão.
 
+### Hiper-parâmetros
+
+- Dimensão do Espaço Latente (Bottleneck Size)
+- Fator de Ponderação do Erro KL
+- Distribuição do ruído: geralmente é N(0,1)
+
+## Transformers (Arquitetura Baseada em Atenção)
+
+Transformer é uma arquitetura feita para processar dados sequenciais de forma paralela e capaz de capturar relações de longo alcance. Ele substituiu a recorrência pelo mecanismo de **Autoatenção (Self-Attention)**. Esse mecanismo calcula o nível de relevância de cada elemento de uma sequência em relação a todos os outros elementos simultaneamente. É a arquitetura base dos LLMs e modelos de difusão. Hoje domina a área de **criação de dados, texto e visão computacional**. Os únicos pontos negativos são a **demora excessiva tanto no treino quanto na previsão pós treino e o custo alto de memória e processador**.
+
+Susbtituíram os RNNs, GRUs quase por completo por não dependerem de uma janela de tempo e nem por ter só 1 única entrada do passado querepresenta todos os dados anteriores. Ao ligar todos os dados com todos consegue saber exatamente o quanto cada um influencia o outro independente da distância (não sofre de amnésia como os RNNs) e não tem de ponderar todos os dados passados numa única entrada, misturando a influência de todos os valores antigos (tornando difícil saber qual o peso real de cada fator passado).
+
+Também substituíram quase por completo as GANs, pois os modelos de difusão (uma implmentação dos transformers) conseguem criar novos dados com muito mais precisão que as GANs, embora demorem mais no processo de criação.
+
+Seu pulo do gato foi desenvolver o mecanismo de autoatenção, **relacionando todos os dados com todos os outros e medindo o quanto cada um é relevante para o outro**. Isso supera e muito as RNNs e GRUs por não trabalharem apenas com uma janela fixa de dados. O primeiro dado pode se relacionar mais forte com o último do que o penúltimo e os transformers detectam isso. Devido a essa característica ele pode ser paralelizado, o que GANs e RNNs não permitem.
+
+Apesar de ter sido criado para texto (por isso mesmo sua primeira implementação foram os LLMs - large language models) logo se descobriu que o funcionamento de atenção pode servir para qualquer tipo de dado, podendo ser usado em música, séries temporais e imagens. Ao desenvolver os transformer multimodal se tornou capaz de processar diversos tipos de dados e escolher a melhor abordagem para os dados de entrada.
+
+### Diferença para a MLP
+
+Enquanto o MLP processa vetores de entrada de tamanho fixo e independente do contexto da sequência, o Transformer introduz capacidades essenciais:
+
+- **Peso muda com o contexto:** No MLP o peso é fixo após o treinamento. No Transformer a representação de um token (palavra/item) muda de acordo com os outros tokens ao seu redor (mecanismo de atenção).
+- **Entradas de Tamanho Variável e Sequenciais:** MLP tem um vetor de entrada de tamanho fixo. Transformers lidam com sequências de tamanho variável através do uso de embeddings e codificação posicional.
+
+### Arquitetura Resumida
+
+Apesar das diferenças o transformer uma o MLP internamente, mas rodeado de muito mais coisa que o dá suas características especiais. O **transformer é composto por módulos, onde cada módulo possui uma rede neural**. A ligação entre os módulos possui o resíduo da entrada igual a ResNet, fazendo toda a rede se comportar como uma ResNet, aonde no lugar de camadas ocultas temos uma rede neural inteira. O transformer ainda usa como seu pilar a arquitetura de autoencoder. Ela tem uma camada de encoder que processa a entrada, transformando-a em um vetor de tokens. A camada decoder une esse vetor de tokens com os vetores antigos, processa tudo e converte o vetor de tokens final de volta em uma sequência. Tanto a camada do codificador quanto a do decodificador possuem camadas de autoatenção e de MLP.
+
+> Em resumo, o transformer tem arquitetura modular e usa várias arquiteturas internamente, entre elas MLP, ResNet e Autoencoder.
+
+#### Conexão entre os Neurônios
+
+Ao contrário de uma rede totalmente conectada (como o MLP), a conectividade no Transformer ocorre através de **módulos compostos** por blocos funcionais:
+
+```
+Entrada ──> Embeddings + Positional Encoding 
+            │
+            ▼
+┌─────────────────────────────────────────┐
+│     Módulo de Autoatenção Multiponta    │ <── Conectividade dinâmica baseada
+│        (Multi-Head Attention)           │     no contexto dos tokens
+└────────────────────┬────────────────────┘
+                     │  (Soma Residual + Camada de Normalização)
+                     ▼
+┌─────────────────────────────────────────┐
+│           Rede Feed-Forward             │ <── Conectividade estilo MLP tradicional
+│                   (MLP)                 │     aplicada a cada token
+└────────────────────┬────────────────────┘
+                     │  (Soma Residual + Camada de Normalização)
+                     ▼
+                   Saída
+```
+
+- **Conexões Dinâmicas (Mecanismo de Atenção):** Não há conexões fixas peso a peso entre as posições da sequência. Em vez disso, cada token se conecta a **todos** os outros tokens da sequência com uma "intensidade" que é calculada dinamicamente para cada entrada.
+- **Conexões Locais (MLP):** Após a camada de atenção, o vetor de cada token passa de forma independente por um MLP tradicional de 2 camadas com funções de ativação (como GELU ou ReLU).
+- **Conexões Residuais e Camada de Normalização:** Para impedir o vanish gradient, cada submódulo possui conexões residuais iguais a da ResNet ($x + F(x)$) seguidas de normalização de camada para manter os valores todos numa mesma faixa.
+
+![](images/transf1.png)
+
+### Matemática da Autoatenção (Self-Attention)
+
+O mecanismo de **Autoatenção Escalar Ponderada (Scaled Dot-Product Attention)** permite que a rede meça a relevância entre todos os pares de tokens da sequência.
+
+#### Vetores de Projeção (Q, K, V)
+Para cada token de entrada (representado por seu vetor X), calculam-se três vetores através de multiplicações de matrizes com pesos treináveis ($W^Q, W^K, W^V$):
+
+* **Query (Q):** Representa o que o token atual está "procurando".
+* **Key (K):** Representa a "etiqueta" ou o conteúdo que cada token oferece.
+* **Value (V):** Representa a informação real que o token transmite.
+
+$$Q = X W^Q, \quad K = X W^K, \quad V = X W^V$$
+
+#### A Equação Principal da Atenção
+
+A atenção pontual escalada é dada por:
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V$$
+
+Aonde
+
+- $Q K^T$: Calcula a similaridade/afinidade entre cada Query e todas as Keys. O resultado é uma **matriz de pontuação de afinidade**.
+- $\frac{1}{\sqrt{d_k}}$: Divide pela raíz da dimensão das chaves ($d_k$). Isso previne que o produto escalar cresça demais para dimensões altas, o que faria a função softmax entrar em regiões de gradiente extremamente pequeno . Portanto fazer essa divisão **evita vanishing gradient**.
+- **Softmax:** Aplica a função linha por linha para converter as pontuações em uma distribuição de probabilidade (pesos de atenção que somam 1).
+- Multiplica os pesos do softmax pela matriz de Valores V. **Tokens com maior relevância ponderam mais** na construção da nova representação do token.
+
+### Informações Arquiteturais Resumidas
+
+- **Ativações:** GELU ou SwiGLU (em Transformers modernos como LLaMA), ReLU (no artigo original).
+- **Normalização:** LayerNorm ou RMSNorm (aplicadas antes ou depois das subcamadas).
+- **Multi-Head Attention:** Executa o processo de atenção h vezes em paralelo com projeções de pesos diferentes, permitindo que a rede atente a informações de diferentes subespaços de representação simultaneamente.
+
+### Quando usar:
+- Processamento de Linguagem Natural (NLP), tradução, sumarização e modelos de chat.
+- Modelos multimodal (texto, imagem, áudio combinados).
+- Visão computacional em grande escala (Vision Transformers - ViT).
+
+### Pontos Positivos:
+- **Paralelização massiva:** Permite treinar modelos gigantescos em grandes volumes de dados.
+- Captura dependências de longo alcance em toda a sequência de forma direta.
+- Estado da arte absoluto na maioria das tarefas de IA moderna.
+
+### Pontos Negativos:
+- **Custo computacional quadrático $O(N^2)$**.
+- Exige volumes gigantescos de dados para treinar do zero sem overfitting.
+- **Alto consumo de memória tanto no treinamento quanto na previsão**.
+
+### Hiper-parâmetros
+
+- Dimensão do Modelo
+- Número de Cabeças de Atenção (quantas threads simultâneas)
+- Número de camadas ocultas no MLP
+- Número de camadas ocultas no autoencoder
+- Tipo de Normalização: Pre-LN vs. Post-LN, ou uso de LayerNorm vs. RMSNorm
+- Positional Embeddings: Tipo de codificação posicional (Absoluta Sinusoidal, Absoluta Aprendida, Relativa, RoPE, ALiBi)
+
 ## COMO TRATAR ÁUDIO COM REDE NEURAL
 
 Áudio pode ser tratado de diferentes formas a depender do objetivo. Podemos transformá-lo em uma matriz 2D (tempo x frequência) chamada Espectrograma. Isso nos permite usar CNNs para processar o áudio. Podemos usar o áudio bruto 1D também, que é como todas as demais arquiteturas usam (incluisve a CNN com adaptações). As arquiteturas usadas hoje são: CNN, Transformer e Modelos de Difusão.
@@ -378,6 +578,51 @@ RNNs já foram a melhor escolha para áudio, inclusive devido a sua arquitetura 
 
 ## MÉTRCAS
 
+As métricas de qualidade e de comparação são as mesmas dos modelos clássicos de machine learning.
+
+### Métricas de Classificação
+
+- Acurácia
+- Precisão
+- Recall
+- F1-Score
+
+### Métricas de Regressão
+
+- MSE
+- RMSE
+- MAE
+- R²
+
+### Métricas de Comparação
+
+Além das acima, alguns métodos já conhecidos podem ser usados para comparar modelos. Alguns também são novos.
+
+- Curva AUC-ROC
+- AIC e BIC
+- Cross-Validation Score (quando usa k-fold para treinar): mede a média e desvio padrão ao trocar os folds para avaliar a estabilidade do modelo frente a dados não vistos.
+- Latência de Inferência: mede o tempo para fazer uma previsão.
+- Throughput (amostras/segundo): Quantidade de dados processados por unidade de tempo
+- Consumo de Memória
+
+### Métricas de Criação
+
+Aqui surgem métricas novas, pois entramos em uma área inédita, a de criação de dados.
+
+#### Para detecção de objetos em imagens
+
+- mAP: Avalia precisão e recall em múltiplos limiares (técnica padrão)
+- IoU: Mede a sobreposição entre a caixa/máscara prevista e a real.
+- Dice Coefficient: Usado em segmentação de imagens médicas
+
+#### Para textos
+
+- Perplexity: Mede quão bem o modelo de linguagem prevê o próximo token (quanto menor, melhor)
+- BLEU: Compara o texto gerado com textos de referência (muito usados em **tradução e sumarização**)
+
+#### Para criação de imagens
+
+- FID: Avalia a qualidade e diversidade de imagens geradas
 
 ## RESUMO COMPARATIVO DE APLICAÇÃO
 
